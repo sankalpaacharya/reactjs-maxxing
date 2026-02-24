@@ -23,6 +23,8 @@ import { React15InputDemo } from "@/components/blog/react15-input-demo";
 import { LineExecutionDemo } from "@/components/blog/line-execution-demo";
 import { cache } from "react";
 
+import { Quote } from "@/components/ui/quote";
+
 import { chConfig, Post, PostFrontmatter } from "./mdx-data";
 
 const UserGroup = (props: any) => React.createElement(HugeiconsIcon, { icon: UserGroupIcon, ...props });
@@ -50,6 +52,7 @@ const mdxComponents = {
   EventLoopDemo,
   React15InputDemo,
   LineExecutionDemo,
+  Quote,
 };
 
 const CONTENT_DIR = path.join(process.cwd(), "content/blog");

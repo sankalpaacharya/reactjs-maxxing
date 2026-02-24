@@ -7,11 +7,11 @@ draft: true
 ---
 
 
-I'm sure most of the react developers have gone through this once, updating the state and trying to `console.log` it in the next 
-line and wondering for a hour why my state isn't changing. 
+I'm sure most React developers have gone through this once, updating the state and trying to `console.log` it in the next 
+line and wondering for an hour why the state isn't changing. 
 
 
-Let's start with a few examples and we will dig deeper
+Let's start with a few examples and we will dig deeper.
 <Sandpack
 template="react"
 showConsole={true}
@@ -123,8 +123,8 @@ export default function App() {
   };
 ```
 
-Try clicking the first `increment` button and check the console tab, you will see still see `0` as a value instead of 
-`1` _Hmm, that seems odd isn't it?_
+Try clicking the first `increment` button and check the console tab. You will still see `0` as a value instead of 
+`1`. _Hmm, that seems odd, isn't it?_
 
 ```jsx
   const handleSetThreeTimes = () => {
@@ -133,8 +133,8 @@ Try clicking the first `increment` button and check the console tab, you will se
     setState(stale + 1);
   };
 ```
-Click the second `increment` button, you would except it to increment 3 times but it only increment once, 
-_Hmm, that seems odd again_
+Click the second `increment` button. You would expect it to increment 3 times, but it only increments once. 
+_Hmm, that seems odd again._
 
 ```jsx 
  const handleSetWithUpdater = () => {
@@ -145,24 +145,56 @@ _Hmm, that seems odd again_
 
 ```
 
-now click the 3rd `increment` button well now it does increment three times, _what is going on here?_
+Now click the 3rd `increment` button. Well, now it does increment three times. _What is going on here?_
 
-React is easy to get started with but also soon we crash into a weird issues like these that makes us wonder 
-_what the hell is even going on_ and it's often time what we think of how it works vs how it is actually working.
+React is easy to get started with, but soon we crash into weird issues like these that make us wonder 
+_what the hell is even going on_, and it's often what we think of how it works vs how it is actually working.
 
-if you already have answer to these all than we will dig deeper into how it's working internally, 
-but if you don't know it's fine we will understand this anyway.
+If you already have answers to all of these, then we will dig deeper into how it's working internally, 
+but if you don't know, it's fine, we will understand this anyway.
 
 <IntendedAudience>
 This blog is for developers who already know React basics and want to understand how React works internally. 
-You should be comfortable with JavaScript concepts like the call stack, event loop and task queues and 
-some basics of react fiber and new reconciliation algorithm.
+You should be comfortable with JavaScript concepts like the call stack, event loop, and task queues, and 
+some basics of React Fiber and the new reconciliation algorithm.
 </IntendedAudience>
+
+
+# Mental Model 
+We often hear this phrase `UI = f(state)`. It’s actually very literal. Your component is just a function. It takes some state, and it returns UI. 
+
+Now here’s where most of us get it wrong.
+
+When we call `setCount(count + 1)`, it feels like we are mutating count. Like the variable itself just changed from `0` to `1`. But React doesn’t work like that. It doesn’t reach inside your function and mutate variables.
+
+Instead, React simply runs your component again.
+
+Let’s take a simple example.
+
+```tsx
+function Counter() {
+  const [count, setCount] = useState(0);
+  return <button>{count}</button>;
+}
+```
+
+On the first render, React calls `Counter()`. Inside that function call, count is `0`. That render finishes. _Done_. Now when you call `setCount(count + 1);`
+
+You’re not mutating count. You’re basically telling React, _Hey, run my Counter function again. But this time, give it a different state value._
+
+So what actually happens looks more like this:
+
+- First call: Counter()  count is 0
+- Later: Counter() count is 1
+
 
 # Fiber Node 
 
-React reads your jsx components and creates this in-memory UI tree called `Fiber`. This fiber 
-tree is made of different `FiberNode`
+React reads your JSX components and creates this in-memory UI tree called `Fiber`. This fiber 
+tree is made of different `FiberNode`s.
+
+
+
 
 
 ```tsx
@@ -192,39 +224,52 @@ And here's why this matters: React owns this data structure. It's just an object
 
 I have another blog if you want to read, [understanding why react fiber exists](https://inside-react.vercel.app/blog/understanding-why-react-fiber-exists)
 
+
 - [FiberNode](https://github.com/facebook/react/blob/main/packages/react-reconciler/src/ReactFiber.js#L138-L211)
 
 # memoizedState
 
-memoizedState is the property in the `FiberNode` which hold all information about your hooks.
+Once you start reading the source code, you realize something interesting: hooks are not stored in some abstract state bucket. They are attached directly to the component’s Fiber.
 
-say you have a simple `App` component 
+Say you have a simple `App` component. 
 
 ```tsx 
 function App(){
   const [count, setCount] = useState(0);
   const [greet, setGreet] = useState("hello");
 
-  const ref = useRef();
   return <>...</>
 }
 ```
-Now this your App component has a `FiberNode` internally and inside the `memoizedState` all your hooks 
-information is stored as a linkedinlist.
+When React renders `App`, it creates a `FiberNode` to represent this component in the tree. That fiber has a property called `memoizedState`. The name sounds like it holds a single value, but it actually holds the entire hook chain for the component.
+
+Internally, `memoizedState` is the head of a linked list. It's nothing but just a `hook` object.
+
+Each time React encounters a hook call during initial rendering, it creates a `hook` object and appends it to this list.
+
+   <img src="/blog/scheduler/hook.png" alt="React UI Runtime" width="400" height="100"/> 
+
+
+In our example, two hooks are called in order: `useState(count)`, `useState(greet)`. So React builds a chain of two hook nodes, each pointing to the next through a `next` pointer. The last one points to null.
 
 <img src="/blog/scheduler/hook.svg" alt="React UI Runtime" width="800" height="100" style={{ display: 'block', margin: '2rem auto' }} />
 
-we only had 2 hooks in our App component that's the reason you see `next: null` on the last hook
-<details>
-  <summary>`queue`</summary>
-   <img src="/blog/scheduler/queue.png" alt="React UI Runtime" width="400" height="100"/> 
-</details>
+One more thing we have to take a look at before we actually see how state update is working internally is a `queue` 
+property inside a `hook` object.
+
+This queue is where React batches the updates before it actually starts **rendering**. Don't worry, we will go 
+into detail.
+
+<img src="/blog/scheduler/queue.svg" alt="React UI Runtime" width="800" height="100" style={{ display: 'block', margin: '2rem auto' }} />
+
 
 > These are some prior knowledge I wanted to discuss before we actually dig in.
 
 # State update is not synchronous
 
-I hope you are ready to dive into react internals now, let's start with an example
+
+
+I hope you are ready to dive into React internals now. Let's start with an example.
 
 ```jsx 
   const handleClick = () => {
@@ -264,41 +309,440 @@ I hope you are ready to dive into react internals now, let's start with an examp
 }`}
 />
 
-When you click a button `handleClick` execution starts, it begins to run synchronously, the moment 
-you come
+The state setter function you get from the `useState` hook is nothing but just a `dispatchSetState` internally. When 
+you use the `setCount`, React internally calls the `dispatchSetState`.
+
+When you click a button, `handleClick` execution starts. It begins to run synchronously. The moment 
+you come to
 
 ```jsx 
 setCount(prev+1)
 ```
-it doesn't immediately start the rendering process, it first schedules an update and for that it calls 
-`dispatchSetState` internally
+React calls a `dispatchSetState` function. The purpose of this function is to enqueue the update in a queue
+and schedule it for rendering. 
 
 
 # dispatchSetState
 
-react creates an update object first enqueue that updateObject, it will now go all the way up to the 
-root fiber and mark everything as a needing update (childrenLane)
+Let's dig into this function
 
-still the rendering hasn't started yet
+```tsx {5-7} [fold=16-60 "Fast path: eager compute + bailout"] [fold=35-40 "Normal path: enqueue + schedule"]
+function dispatchSetState<S, A>(
+  fiber: Fiber,
+  queue: UpdateQueue<S, A>,
+  action: A,
+) {
+  const lane = requestUpdateLane(fiber);
 
-## State update is not sync
+  const update: Update<S, A> = {
+    lane,
+    action,
+    hasEagerState: false,
+    eagerState: null,
+    next: null as any,
+  };
 
-    The set function only updates the state variable for the next render. If you read the state variable after calling the set function, you will still get the old value that was on the screen before your call.
+  if (isRenderPhaseUpdate(fiber)) {
+    enqueueRenderPhaseUpdate(queue, update);
+  } else {
+    const alternate = fiber.alternate;
 
-This is easy to understand, we've already seen how setState() schedules re-render in next tick, it is not sync and the updated value can only be got from next render since the state update is done in useState() not in setState().
+    if (
+      fiber.lanes === NoLanes &&
+      (alternate === null || alternate.lanes === NoLanes)
+    ) {
+      const lastRenderedReducer = queue.lastRenderedReducer;
+
+      if (lastRenderedReducer !== null) {
+        let prevDispatcher;
+        try {
+          const currentState: S = queue.lastRenderedState as any;
+          const eagerState = lastRenderedReducer(currentState, action);
+
+          update.hasEagerState = true;
+          update.eagerState = eagerState;
+
+          if (is(eagerState, currentState)) {
+            enqueueConcurrentHookUpdateAndEagerlyBailout(
+              fiber,
+              queue,
+              update,
+            );
+            return;
+          }
+        } catch (error) {
+        } finally {
+          if (__DEV__) {
+            ReactCurrentDispatcher.current = prevDispatcher;
+          }
+        }
+      }
+    }
+
+    const root = enqueueConcurrentHookUpdate(fiber, queue, update, lane);
+
+    if (root !== null) {
+      const eventTime = requestEventTime();
+      scheduleUpdateOnFiber(root, fiber, lane, eventTime);
+      entangleTransitionUpdate(root, queue, lane);
+    }
+  }
+}
+```
+React will first request a lane. `lane` in React is the priority of the update. If the state change is from 
+a button click, then we need this update to reflect immediately, so we need to set a higher priority compared to a fetch response. 
+In our case it's a button click, so it's going to be a `1`.
 
 
-## setState() with same value might still trigger re-render
 
-    If the new value you provide is identical to the current state, as determined by an Object.is comparison, React will skip re-rendering the component and its children. This is an optimization. Although in some cases React may still need to call your component before skipping the children, it shouldn’t affect your code.
+```tsx {8-15}{22-30} [fold=16-60 "Fast path: eager compute + bailout"] [fold=35-40 "Normal path: enqueue + schedule"]
+function dispatchSetState<S, A>(
+  fiber: Fiber,
+  queue: UpdateQueue<S, A>,
+  action: A,
+) {
+  const lane = requestUpdateLane(fiber);
+
+  const update: Update<S, A> = {
+    lane,
+    action,
+    hasEagerState: false,
+    eagerState: null,
+    next: null as any,
+  };
+
+  if (isRenderPhaseUpdate(fiber)) {
+    enqueueRenderPhaseUpdate(queue, update);
+  } else {
+    const alternate = fiber.alternate;
+
+    if (
+      fiber.lanes === NoLanes &&
+      (alternate === null || alternate.lanes === NoLanes)
+    ) {
+      const lastRenderedReducer = queue.lastRenderedReducer;
+
+      if (lastRenderedReducer !== null) {
+        let prevDispatcher;
+        try {
+      const currentState: S = queue.lastRenderedState as any;
+        const eagerState = lastRenderedReducer(currentState, action);
+
+        update.hasEagerState = true;
+        update.eagerState = eagerState;
+
+          if (is(eagerState, currentState)) {
+            enqueueConcurrentHookUpdateAndEagerlyBailout(
+              fiber,
+              queue,
+              update,
+            );
+            return;
+          }
+        } catch (error) {
+        } finally {
+          if (__DEV__) {
+            ReactCurrentDispatcher.current = prevDispatcher;
+          }
+        }
+      }
+    }
+
+    const root = enqueueConcurrentHookUpdate(fiber, queue, update, lane);
+
+    if (root !== null) {
+      const eventTime = requestEventTime();
+      scheduleUpdateOnFiber(root, fiber, lane, eventTime);
+      entangleTransitionUpdate(root, queue, lane);
+    }
+  }
+}
+```
+React creates an update object, first enqueuing that `update` object into a `memoizedState.queue`. Remember we discussed this earlier?
+
+The update object contains different properties like `eagerState`, `action`, and `next`.
+
+- action is the callback function you pass in your setState function, `(prev)=>prev+1`
+- next is the pointer to another update. Updates are stashed in a `memoizedState.queue` in a circular linked list.
+
+```tsx {30-42} [fold=10-30] 
+function dispatchSetState<S, A>(
+  fiber: Fiber,
+  queue: UpdateQueue<S, A>,
+  action: A,
+) {
+  const lane = requestUpdateLane(fiber);
+
+  const update: Update<S, A> = {
+    lane,
+    action,
+    hasEagerState: false,
+    eagerState: null,
+    next: null as any,
+  };
+
+  if (isRenderPhaseUpdate(fiber)) {
+    enqueueRenderPhaseUpdate(queue, update);
+  } else {
+    const alternate = fiber.alternate;
+
+    if (
+      fiber.lanes === NoLanes &&
+      (alternate === null || alternate.lanes === NoLanes)
+    ) {
+      const lastRenderedReducer = queue.lastRenderedReducer;
+
+      if (lastRenderedReducer !== null) {
+        let prevDispatcher;
+        try {
+          const currentState: S = queue.lastRenderedState as any;
+          const eagerState = lastRenderedReducer(currentState, action);
+
+          update.hasEagerState = true;
+          update.eagerState = eagerState;
+
+          if (is(eagerState, currentState)) {
+            enqueueConcurrentHookUpdateAndEagerlyBailout(
+              fiber,
+              queue,
+              update,
+            );
+            return;
+          }
+        } catch (error) {
+        } finally {
+          if (__DEV__) {
+            ReactCurrentDispatcher.current = prevDispatcher;
+          }
+        }
+      }
+    }
+
+    const root = enqueueConcurrentHookUpdate(fiber, queue, update, lane);
+
+    if (root !== null) {
+      const eventTime = requestEventTime();
+      scheduleUpdateOnFiber(root, fiber, lane, eventTime);
+      entangleTransitionUpdate(root, queue, lane);
+    }
+  }
+}
+```
+`eagerState` is your state value calculated. If you look at the condition `if (is(eagerState, currentState))`,
+it means we are checking if the current state update and the previous one are the same, then we don't even need to re-render, 
+so we will bail out early. 
 
 
-Early bailout → if React can determine before starting the render that nothing changed, it skips creating work for this fiber and all children.
-
-Normal bailout (not early) → React already started the render for this fiber. At this point, it compares previous memoized state with new state. If identical → skips children, but the fiber itself was “touched” for this render.
-
-
-# requestIdleCallback
-
+```tsx 
+setState(prev=>prev)
+```
+There is no point in keep re-rendering here as the value will be `0`. But this bailout mechanism is not guaranteed as well. We will discuss 
+this in another blog.
 
 
+Remember, we haven't started rendering yet.
+
+```tsx {53-54} [fold=5-48 "Fast path: eager compute + bailout"] 
+function dispatchSetState<S, A>(
+  fiber: Fiber,
+  queue: UpdateQueue<S, A>,
+  action: A,
+) {
+  const lane = requestUpdateLane(fiber);
+
+  const update: Update<S, A> = {
+    lane,
+    action,
+    hasEagerState: false,
+    eagerState: null,
+    next: null as any,
+  };
+
+  if (isRenderPhaseUpdate(fiber)) {
+    enqueueRenderPhaseUpdate(queue, update);
+  } else {
+    const alternate = fiber.alternate;
+
+    if (
+      fiber.lanes === NoLanes &&
+      (alternate === null || alternate.lanes === NoLanes)
+    ) {
+      const lastRenderedReducer = queue.lastRenderedReducer;
+
+      if (lastRenderedReducer !== null) {
+        let prevDispatcher;
+        try {
+          const currentState: S = queue.lastRenderedState as any;
+          const eagerState = lastRenderedReducer(currentState, action);
+
+          update.hasEagerState = true;
+          update.eagerState = eagerState;
+
+          if (is(eagerState, currentState)) {
+            enqueueConcurrentHookUpdateAndEagerlyBailout(
+              fiber,
+              queue,
+              update,
+            );
+            return;
+          }
+        } catch (error) {
+        } finally {
+          if (__DEV__) {
+            ReactCurrentDispatcher.current = prevDispatcher;
+          }
+        }
+      }
+    }
+
+    const root = enqueueConcurrentHookUpdate(fiber, queue, update, lane);
+
+    if (root !== null) {
+      const eventTime = requestEventTime();
+      scheduleUpdateOnFiber(root, fiber, lane, eventTime);
+      entangleTransitionUpdate(root, queue, lane);
+    }
+  }
+}
+```
+Now our `update` object is ready, so `enqueueConcurrentHookUpdate` will attach the update to the hook’s update queue,
+and it will move upward from this fiber node all the way up to the root, marking it dirty. When React starts 
+rendering, it starts from the top level and checks if this fiber node and its children have an update or not, 
+and if both don't contain any update, we can skip that subtree. 
+
+```tsx {57-57} [fold=5-48 "Fast path: eager compute + bailout"] 
+function dispatchSetState<S, A>(
+  fiber: Fiber,
+  queue: UpdateQueue<S, A>,
+  action: A,
+) {
+  const lane = requestUpdateLane(fiber);
+
+  const update: Update<S, A> = {
+    lane,
+    action,
+    hasEagerState: false,
+    eagerState: null,
+    next: null as any,
+  };
+
+  if (isRenderPhaseUpdate(fiber)) {
+    enqueueRenderPhaseUpdate(queue, update);
+  } else {
+    const alternate = fiber.alternate;
+
+    if (
+      fiber.lanes === NoLanes &&
+      (alternate === null || alternate.lanes === NoLanes)
+    ) {
+      const lastRenderedReducer = queue.lastRenderedReducer;
+
+      if (lastRenderedReducer !== null) {
+        let prevDispatcher;
+        try {
+          const currentState: S = queue.lastRenderedState as any;
+          const eagerState = lastRenderedReducer(currentState, action);
+
+          update.hasEagerState = true;
+          update.eagerState = eagerState;
+
+          if (is(eagerState, currentState)) {
+            enqueueConcurrentHookUpdateAndEagerlyBailout(
+              fiber,
+              queue,
+              update,
+            );
+            return;
+          }
+        } catch (error) {
+        } finally {
+          if (__DEV__) {
+            ReactCurrentDispatcher.current = prevDispatcher;
+          }
+        }
+      }
+    }
+
+    const root = enqueueConcurrentHookUpdate(fiber, queue, update, lane);
+
+    if (root !== null) {
+      const eventTime = requestEventTime();
+      scheduleUpdateOnFiber(root, fiber, lane, eventTime);
+      entangleTransitionUpdate(root, queue, lane);
+    }
+  }
+}
+```
+Now finally we schedule a render. Notice the wording carefully. We schedule it. We don’t start rendering immediately.
+
+Let’s go back to handleClick.
+
+<LineExecutionDemo
+  title="handleClick()"
+  speed={600}
+  lang="jsx"
+  startAt={8}
+  stopAt={10}
+  skip={[4, 5]}
+  console={[
+    { line: 3, text: 'Hello Human 👋' },
+    { line: 8, text: '0', type: 'log' },
+  ]}
+  code={`const handleClick = () => {
+  const isHuman = true
+  if(isHuman){
+    console.log("Hello Human 👋");
+  }else{
+    console.log("😲😲");
+  }
+  setCount(count + 1); // ⏳ schedules update
+  console.log(count)  
+}`}
+/>
+
+`setCount` did its job. It created an update and told React that this component needs to re-render. That’s it. Then JavaScript keeps running. React does not pause your function halfway. So execution reaches `console.log(count)`
+
+And you still see `0`. Why?
+
+Because setCount did not mutate count inside this render. It only queued a new render with a different value. The count variable you’re logging belongs to the current render. 
+
+
+Right now, you’re still inside the old snapshot.
+
+That’s why it logs `0`
+
+
+# Batch Update
+
+Say your `handleClick` had a few more `setState` functions below. 
+
+
+<LineExecutionDemo
+  title="handleClick()"
+  speed={600}
+  lang="jsx"
+  startAt={8}
+  stopAt={10}
+  skip={[4, 5]}
+  console={[
+    { line: 3, text: 'Hello Human 👋' },
+    { line: 8, text: '0', type: 'log' },
+  ]}
+  code={`const handleClick = () => {
+  const isHuman = true
+  if(isHuman){
+    console.log("Hello Human 👋");
+  }else{
+    console.log("😲😲");
+  }
+  setCount(count + 1); //  scheduled update ✅
+  setCount(count + 4); //  schedules update ⚠️
+  setGreet("Namaste!"); //  schedules update ⚠️
+  console.log(count)  
+}`}
+/>
+
+Here `setCount(count+4)` and `setGreet("Namaste!")` will again call `dispatchSetState` and go through the whole process, 
+keeping stashing the update object into a hook's queue.  
+
+This is exactly what we mean by React batching the state updates!
