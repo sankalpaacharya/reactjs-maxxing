@@ -1,9 +1,9 @@
 ---
-title: "How state update works internally"
-description: "I'm looking for a job"
-date: "2026-01-26"
+title: "How state updates work internally"
+description: "A deep dive into how React state updates really work, from hooks to batching"
+date: "2026-02-24"
 topic: "React"
-draft: true
+draft: false
 ---
 
 
@@ -191,7 +191,7 @@ So what actually happens looks more like this:
 # Fiber Node 
 
 React reads your JSX components and creates this in-memory UI tree called `Fiber`. This fiber 
-tree is made of different `FiberNode`s.
+tree is made of different `FiberNode`
 
 
 
@@ -712,10 +712,9 @@ Right now, you’re still inside the old snapshot.
 That’s why it logs `0`
 
 
-# Batch Update
+# Batching
 
 Say your `handleClick` had a few more `setState` functions below. 
-
 
 <LineExecutionDemo
   title="handleClick()"
@@ -745,4 +744,68 @@ Say your `handleClick` had a few more `setState` functions below.
 Here `setCount(count+4)` and `setGreet("Namaste!")` will again call `dispatchSetState` and go through the whole process, 
 keeping stashing the update object into a hook's queue.  
 
-This is exactly what we mean by React batching the state updates!
+React lets the entire event handler finish executing. JavaScript runs top to bottom. Only after handleClick fully exits does React move to the next phase.
+
+At that point, React begins the render phase. Once the event handler finishes, React starts rendering.
+
+Now it goes to the count hook and looks at the queued updates. Instead of applying them immediately when you called setCount, React waits and then applies them in order during the next render.
+
+# Action
+
+Now let’s talk about `setCount(count + 1)` vs `setCount(prev => prev + 1)` and why this difference actually matters.
+
+To understand this, we have to look at what React really stores when you call setState. It does not store the next value. It stores an update object.
+```tsx
+const update: Update<S, A> = {
+  lane,
+  action,
+  hasEagerState: false,
+  eagerState: null,
+  next: null as any,
+};
+```
+
+The important part here is action. When you write
+
+```tsx
+setCount(count + 1);
+```
+
+you are passing a value as the action. There is nothing to compute later. React just stashes that value inside the update object.
+
+Now remember, updates are queued first. The render has not restarted yet. The count you read here is still the stale value, which is 0.
+
+So when you do:
+
+```tsx
+setState(stale + 1);
+setState(stale + 1);
+setState(stale + 1);
+```
+
+what you are really saying is:
+
+“On the next render, set the state to 1.”
+Three times.
+
+When React processes the update queue during rendering, it applies those updates one by one, but each update just overwrites the state with 1. Nothing accumulates.
+
+Now with
+
+```tsx
+setState(prev => prev + 1);
+setState(prev => prev + 1);
+setState(prev => prev + 1);
+```
+
+Here, the action is not a value. It is a function.
+
+You are not telling React what the next state is. You are telling React how to calculate the next state. So React stashes three update objects, each holding a reducer function.
+
+During the next render, React starts with the base state and applies updates in order. For each update, it calls the action function with the latest computed state. This is why the functional form works even with multiple updates in the same event.
+
+
+# Conclusion
+This blog ended up way longer than I expected, but it was really interesting even for me to explore how state updates actually work internally. And this is still just a small part of what React really is.
+
+Thanks for reading ❤️
