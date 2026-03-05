@@ -15,6 +15,11 @@ const poppins = Poppins({
 
 export const metadata: Metadata = {
   metadataBase: new URL("https://inside-react.vercel.app"),
+  alternates: {
+    types: {
+      "application/rss+xml": "https://inside-react.vercel.app/rss.xml",
+    },
+  },
   title: "Inside React | Sanku's Blog",
   description: "Deep dives into React internals, Fiber architecture, and modern web development",
   generator: "v0.app",
