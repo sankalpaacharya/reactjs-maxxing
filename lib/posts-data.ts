@@ -38,6 +38,34 @@ export const postsData: Record<string, PostMeta> = {
         topic: "React",
         date: "2026-02-10",
     },
+    "how-state-updates-work-internally": {
+        slug: "how-state-updates-work-internally",
+        title: "How state updates work internally",
+        description: "A deep dive into how React state updates really work, from hooks to batching",
+        topic: "React",
+        date: "2026-02-24",
+    },
+    "making-sense-of-key-prop-in-react": {
+        slug: "making-sense-of-key-prop-in-react",
+        title: "Making sense of 'key' prop in react",
+        description: "Why React needs a key prop, how it affects reconciliation",
+        topic: "React",
+        date: "2026-03-11",
+    },
+    "react-fiber-indepth": {
+        slug: "react-fiber-indepth",
+        title: "React Fiber in Depth",
+        description: "I'm looking for a job",
+        topic: "React",
+        date: "2026-01-26",
+    },
+    "two-trees-of-react": {
+        slug: "two-trees-of-react",
+        title: "Two trees of react",
+        description: "I'm looking for a job",
+        topic: "React",
+        date: "2026-01-26",
+    },
 };
 
 export function getPostMeta(slug: string): PostMeta | null {
