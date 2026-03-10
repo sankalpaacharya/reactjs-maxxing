@@ -1,0 +1,405 @@
+---
+title: "Making sense of 'key' prop in react"
+description: "Understanding the brain of your computer - how CPUs work and why they matter"
+date: "2026-01-26"
+topic: "React"
+draft: true
+---
+
+
+I'm sure every React developer has faced this warning once
+
+<img src="/blog/key/error.svg" alt="React UI Runtime"  style={{ display: 'block', margin: '2rem auto' }} />
+
+
+React wants you to add a `key` prop to list items but honestly, I never truly understood why. I just did it because I didn’t want to see the warning in the console or the linter screaming at me. And it's just a <span className='text-yellow-400'>warning</span> who cares right? 
+
+<img src="/blog/key/warning.png" alt="React UI Runtime"  style={{ display: 'block', margin: '2rem auto' }} />
+
+Everytime i used to get this warning i just _slammed_ with an `index` as a `key`
+
+```tsx 
+todos.map((item, index) => (
+  <Item key={index} todo={item} />
+))
+```
+
+<img src="/blog/key/meme.svg" alt="React UI Runtime"  style={{ display: 'block', margin: '2rem auto' }} />
+
+_I know, I know_ you are already judging me "_What an idiot just put the `item` as `key` why do you even want 
+to put `index` as a key_". Let me tell you something i thought _WHAT IF_, _WHAT IF_ my users wants to put same todo twice, I do that a lot 
+_you can't judge me for this_ 😳
+
+
+<img src="/blog/key/buymilk.png" alt="React UI Runtime"  style={{ display: 'block', margin: '2rem auto' }} />
+
+and i would get the warning again, so for the safe side i always kept `index` as a key.
+
+<img src="/blog/key/samekey.svg" alt="React UI Runtime"  style={{ display: 'block', margin: '2rem auto' }} />
+
+This is definitely not the optimal way and all i'm doing is just suppressing warning we will discuss why, keeping jokes aside let's understand 
+why react even needs key props to maintains the items in a list
+
+
+
+# Why does React even need a key?
+
+Let's begin with a Problem
+
+
+
+Let's say you have product list array and you are rendering this product items on a screen and you have 
+button `sort by name` which allows the user to sort items according to it's name.
+
+I have to explain here, put sandpack here and we will see how not giving key messes up? 
+and we will take a look at what react is doing internally and that cause the mess 
+and now why we need a key 
+
+and later if we need, explain how react internally needs a key
+
+<img src="/blog/key/list.svg" alt="React UI Runtime"  style={{ display: 'block', margin: '2rem auto' }} />
+
+when you sort, the ordering of items changed, react have to re-render the UI so that it can match UI with the 
+sorted list. React does this by diffing the old UI tree and the new UI tree, when it does so it tries to do 
+it with a minimal cost 
+
+react is comparing the `first` item from old tree and new tree what should react conclude?
+
+<img src="/blog/key/changed.svg" alt="React UI Runtime"  style={{ display: 'block', margin: '2rem auto' }} />
+
+- `Keyboard` has moved
+- `Keyboard` was deleted 
+- `Keyboard` was replaced
+
+It genuinely cannot tell. Just looking at one position in isolation, all of those are valid interpretations.
+What should we do with this `Keyboard` DOM node? get rid of it?
+
+say after comparing react came to the conclusion
+
+<img src="/blog/key/delete.svg" alt="React UI Runtime"  style={{ display: 'block', margin: '2rem auto' }} />
+
+- `Laptop` is deleted
+
+React marked the laptop fiber node as it needs a deletion and move to another item for comparision
+
+Now on the second item comparison it sees laptop is there, it just seems like they are swapped but we have already 
+marked `Laptop` fiber node as it needs deletion 
+
+<img src="/blog/key/moved.svg" alt="React UI Runtime"  style={{ display: 'block', margin: '2rem auto' }} />
+
+And we end up deleting and creating the same DOM node which simply would have been moved. It's fine for a single DOM node but 
+for thousands of nodes it would be a nightmare for performance
+
+
+# Key on components
+
+_THEN WHY DON'T OTHER COMPONENTS NEED A "KEY" PROP_
+<img src="/blog/key/confused.png" alt="React UI Runtime" width={400}  style={{ display: 'block', margin: '2rem auto' }} />
+
+
+
+---
+Let's see this through an example
+
+Try it yourself type something in the input, then click the button to toggle between `Item1` and `Item2`.
+
+<Sandpack
+  template="react"
+  files={{
+    "/App.js": `import { useState } from "react";
+
+export default function App() {
+  const [isShow, setIsShow] = useState(false);
+
+  return (
+    <div className="container">
+      <button onClick={() => setIsShow((prev) => !prev)}>
+        Switch to {isShow ? "Item1" : "Item2"}
+      </button>
+
+      {isShow ? <Item name="Item1" /> : <Item name="Item2" />}
+    </div>
+  );
+}
+
+function Item({ name }) {
+  const [input, setInput] = useState("");
+  return (
+    <div className="item">
+      <span className="label">{name}</span>
+      <input
+        onChange={(e) => setInput(e.target.value)}
+        placeholder="Type something..."
+      />
+    </div>
+  );
+}`,
+    "/styles.css": `.container {
+  font-family: sans-serif;
+  padding: 1.5rem;
+  max-width: 420px;
+}
+
+.hint {
+  font-size: 0.85rem;
+  color: #555;
+  margin: 0.75rem 0 1rem;
+  line-height: 1.5;
+}
+
+button {
+  padding: 0.5rem 1.2rem;
+  background: #6366f1;
+  color: white;
+  border: none;
+  border-radius: 6px;
+  cursor: pointer;
+  width:fit-content;
+  font-size: 0.9rem;
+}
+
+button:hover {
+  background: #4f46e5;
+}
+
+.item {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  padding: 0.6rem 0.75rem;
+  background: #f4f4f5;
+  border-radius: 6px;
+}
+
+.label {
+  font-weight: 600;
+  width: 60px;
+  flex-shrink: 0;
+  color: #3f3f46;
+}
+
+input {
+  flex: 1;
+  padding: 0.35rem 0.6rem;
+  border: 1px solid #d4d4d8;
+  border-radius: 4px;
+  font-size: 0.875rem;
+}
+.container{
+display:flex;
+flex-direction:column;
+gap:10px;
+}
+`
+  }}
+/>
+
+Notice that the input value sticks around even though the `name` changed. But we are rendering two separate 
+`Item` component right? how is this possible?
+
+Now put the `key` prop in the Item components like this, try it yourself
+```tsx
+ {isShow ? 
+ <Item key={1} name="Item1" /> : 
+ <Item key={2} name="Item2" />}
+ ```
+
+Noticed? your input state no longer sticks it vanishes when you click the `button` 
+
+A little proof for you if you wanna play around and see if react is actually checking the element type 
+on same position and decides to reuse the fiber or not. Try changing one of the `Item` component to this and don't 
+provide the key, you will see input state still vanishes
+
+```tsx 
+<div>
+ <Item key={1} name="Item1" /> 
+ </div>
+
+```
+
+<img src="/blog/key/reconcile.svg" alt="React UI Runtime"  style={{ display: 'block', margin: '2rem auto' }} />
+During reconciliation, React compares the new UI tree with the previous one by checking each Fiber node's position and type. If the type of the element or component at the same position is different, React treats it as a completely new node. It deletes the existing Fiber and creates a new one instead of updating it.
+
+In this example, `span` and `b` have different element types, so React deletes the `span` Fiber and creates a new Fiber for `b`.
+But if the element type is same react will reuse the Fiber and the DOM node
+
+---
+
+<img src="/blog/key/compare.svg" alt="React UI Runtime" width="800" height="100" style={{ display: 'block', margin: '2rem auto' }} />
+
+What actually happened was, we are rendering a same `Item` component and inside of it it has a text and a input button
+when react reconciles it saw new UI tree also has a same `Item` element but the text inside of it is different so it 
+changed the text from `Item1` to `Item2` and when it checked the `input` element it's the same `element` 
+
+so react didn't `remount` your input so the state stays the same
+
+<img src="/blog/key/keycompare.svg" alt="React UI Runtime"  style={{ display: 'block', margin: '2rem auto' }} />
+
+when you provide a key to a component you associate a new identiy to them, now react not only 
+checks the element type in it's position but also checks if it has same key or not, if it's a different 
+key then we need `remove` and `add` a new one.
+
+React now `remount` your input so the state gets lost
+
+You usually don’t need to add a key to standalone components because each component is unique and stable in the tree. React can easily track it by its position, so it knows whether to update or replace it.
+
+The problem only arises with lists of similar elements, where React can’t tell which item is which if the order changes. 
+Without keys, React has to rely on position, which can lead to unnecessary DOM updates, swapped states, or broken animations. 
+That’s why React warns about missing keys for lists but not for single, stable components.
+
+
+# Key on list
+
+<Sandpack
+template="react"
+files={{
+"/App.js": `import { useState } from "react";
+
+const initialItems = [
+  { id: 1, name: "Laptop" },
+  { id: 2, name: "Keyboard" },
+  { id: 3, name: "Mouse" },
+];
+
+export default function App() {
+  const [items, setItems] = useState(initialItems);
+
+  const moveFirstToEnd = () => {
+    setItems(prev => {
+      const [first, ...rest] = prev;
+      return [...rest, first];
+    });
+  };
+
+  return (
+    <div className="container">
+      <button onClick={moveFirstToEnd}>Move first item to end</button>
+      <ul>
+        {items.map((item, index) => (
+          <li>
+            <span className="label">{item.name}</span>
+            <input placeholder={\`Note for \${item.name}...\`} />
+          </li>
+        ))}
+      </ul>
+    </div>
+  );
+}`,
+"/styles.css": `.container {
+  font-family: sans-serif;
+  padding: 1.5rem;
+  max-width: 420px;
+}
+
+.hint {
+  font-size: 0.85rem;
+  color: #555;
+  margin-bottom: 1rem;
+  line-height: 1.5;
+}
+
+button {
+  padding: 0.5rem 1.2rem;
+  background: #6366f1;
+  color: white;
+  border: none;
+  border-radius: 6px;
+  cursor: pointer;
+  font-size: 0.9rem;
+  margin-bottom: 1rem;
+}
+
+button:hover {
+  background: #4f46e5;
+}
+
+ul {
+  list-style: none;
+  padding: 0;
+  margin: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+}
+
+li {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  padding: 0.5rem 0.75rem;
+  background: #f4f4f5;
+  border-radius: 6px;
+}
+
+.label {
+  font-weight: 600;
+  width: 80px;
+  flex-shrink: 0;
+}
+
+input {
+  flex: 1;
+  padding: 0.35rem 0.6rem;
+  border: 1px solid #d4d4d8;
+  border-radius: 4px;
+  font-size: 0.875rem;
+}
+
+.caption {
+  font-size: 0.8rem;
+  color: #888;
+  margin-top: 1rem;
+}
+`
+}}
+/>
+
+write something on each input and click the `move first item to end` button, you will notice the 
+text might have changed but the values in the input are still in their original position, this is 
+the exact problem we face when we don't provide a key
+
+<img src="/blog/key/items.svg" alt="React UI Runtime"  style={{ display: 'block', margin: '2rem auto' }} />
+
+React begins with the first position in the list. In the old tree the first item was Laptop, but in the new tree the first item is Keyboard. React looks at both nodes and sees that they are the same type of element, both `<li>`. Since React does not have any other information about the identity of the item, it assumes this is still the same element and only the content inside it changed.
+
+So instead of removing the Laptop node and creating a new Keyboard node, React simply updates the text inside the existing DOM node. The DOM node that previously represented Laptop is now reused for Keyboard. Then React moves to the second position, and the same thing happens again. Because React is comparing elements purely by position and type, the DOM nodes stay where they are while only their content changes.
+
+But the inputs inside those list items have their own state. And because React reused the same DOM nodes, the input state stayed attached to those positions instead of following the actual items.
+
+This is why after reordering the list you might see something strange: the text you typed for Laptop suddenly appears under Keyboard, the text for Keyboard appears under Mouse, and so on. The inputs stayed in their original positions while the labels changed.
+
+Without a key, React has no reliable way to know that Laptop moved to the end of the list. All it sees is that the element at position 0 changed its text.
+
+<img src="/blog/key/indexasname.svg" alt="React UI Runtime"  style={{ display: 'block', margin: '2rem auto' }} />
+
+This is exactly where the key prop comes in. By providing a key, you are giving React a stable identity for each item in the list. Instead of assuming items are the same just because they appear in the same position, React can now track them by their key and correctly understand when an item has moved, been inserted, or been removed.
+
+
+# index as a Key
+
+```tsx
+  {items.map((item, index) => (
+        <li>
+          <span className="label">{item.name}</span>
+          <input placeholder={`Note for ${item.name}...`} />
+        </li>
+  ))}
+```
+<img src="/blog/key/indexaskey.svg" alt="React UI Runtime"  style={{ display: 'block', margin: '2rem auto' }} />
+
+Now the interesting part!, When you use the index as a key, React thinks each position in the list is the same as before. So if you move the first item to the end, React just reuses the DOM nodes and Fibers at each position. That’s why the inputs still keep the text you typed they never got replaced, only the labels changed.
+
+
+<img src="/blog/key/keymeme.png" alt="React UI Runtime"  style={{ display: 'block', margin: '2rem auto' }} />
+
+
+# Math.random as a key 
+
+When we say it should be unique key it should stable unique key not a random number, I hope you 
+have guessed already what happens when you use `Math.random()` as a key
+
+<img src="/blog/key/randomkey.svg" alt="React UI Runtime"  style={{ display: 'block', margin: '2rem auto' }} />
+
+react sees a different key when diffing and it deletes the DOM node and create it again as `Math.random()` produces
+a random key on each render
+
