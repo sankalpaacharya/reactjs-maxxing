@@ -16,7 +16,7 @@ React wants you to add a `key` prop to list items but honestly, I never truly un
 
 <img src="/blog/key/warning.png" alt="React UI Runtime"  style={{ display: 'block', margin: '2rem auto' }} />
 
-Everytime i used to get this warning i just _slammed_ with an `index` as a `key`
+Every time I used to get this warning I just _slammed_ with an `index` as a `key`
 
 ```tsx 
 todos.map((item, index) => (
@@ -27,18 +27,18 @@ todos.map((item, index) => (
 <img src="/blog/key/meme.svg" alt="React UI Runtime"  style={{ display: 'block', margin: '2rem auto' }} />
 
 _I know, I know_ you are already judging me "_What an idiot just put the `item` as `key` why do you even want 
-to put `index` as a key_". Let me tell you something i thought _WHAT IF_, _WHAT IF_ my users wants to put same todo twice, I do that a lot 
+to put `index` as a key_". Let me tell you something I thought _WHAT IF_, _WHAT IF_ my users want to put the same todo twice, I do that a lot 
 _you can't judge me for this_ 😳
 
 
 <img src="/blog/key/buymilk.png" alt="React UI Runtime"  style={{ display: 'block', margin: '2rem auto' }} />
 
-and i would get the warning again, so for the safe side i always kept `index` as a key.
+and I would get the warning again, so for the safe side I always kept `index` as a key.
 
 <img src="/blog/key/samekey.svg" alt="React UI Runtime"  style={{ display: 'block', margin: '2rem auto' }} />
 
-This is definitely not the optimal way and all i'm doing is just suppressing warning we will discuss why, keeping jokes aside let's understand 
-why react even needs key props to maintains the items in a list
+This is definitely not the optimal way and all I'm doing is just suppressing the warning we will discuss why, keeping jokes aside let's understand 
+why React even needs key props to maintain the items in a list
 
 
 
@@ -48,7 +48,7 @@ Let's begin with a Problem
 
 
 
-Let's say you have product list array and you are rendering this product items on a screen and you have 
+Let's say you have a product list array and you are rendering these product items on a screen and you have 
 button `sort by name` which allows the user to sort items according to it's name.
 
 I have to explain here, put sandpack here and we will see how not giving key messes up? 
@@ -59,11 +59,11 @@ and later if we need, explain how react internally needs a key
 
 <img src="/blog/key/list.svg" alt="React UI Runtime"  style={{ display: 'block', margin: '2rem auto' }} />
 
-when you sort, the ordering of items changed, react have to re-render the UI so that it can match UI with the 
+when you sort, the ordering of items changed, React has to re-render the UI so that it can match the UI with the 
 sorted list. React does this by diffing the old UI tree and the new UI tree, when it does so it tries to do 
 it with a minimal cost 
 
-react is comparing the `first` item from old tree and new tree what should react conclude?
+React is comparing the `first` item from the old tree and new tree, what should React conclude?
 
 <img src="/blog/key/changed.svg" alt="React UI Runtime"  style={{ display: 'block', margin: '2rem auto' }} />
 
@@ -80,9 +80,9 @@ say after comparing react came to the conclusion
 
 - `Laptop` is deleted
 
-React marked the laptop fiber node as it needs a deletion and move to another item for comparision
+React marked the laptop fiber node as it needs a deletion and moved to another item for comparison
 
-Now on the second item comparison it sees laptop is there, it just seems like they are swapped but we have already 
+Now on the second item comparison it sees Laptop is there, it just seems like they are swapped but we have already 
 marked `Laptop` fiber node as it needs deletion 
 
 <img src="/blog/key/moved.svg" alt="React UI Runtime"  style={{ display: 'block', margin: '2rem auto' }} />
@@ -90,6 +90,7 @@ marked `Laptop` fiber node as it needs deletion
 And we end up deleting and creating the same DOM node which simply would have been moved. It's fine for a single DOM node but 
 for thousands of nodes it would be a nightmare for performance
 
+But if we assign a unique stable identifier to each item, React can track exactly where it went in the UI tree.
 
 # Key on components
 
@@ -235,9 +236,9 @@ so react didn't `remount` your input so the state stays the same
 
 <img src="/blog/key/keycompare.svg" alt="React UI Runtime"  style={{ display: 'block', margin: '2rem auto' }} />
 
-when you provide a key to a component you associate a new identiy to them, now react not only 
-checks the element type in it's position but also checks if it has same key or not, if it's a different 
-key then we need `remove` and `add` a new one.
+when you provide a key to a component you associate a new identity to them, now React not only 
+checks the element type in its position but also checks if it has the same key or not, if it's a different 
+key then we need to `remove` and `add` a new one.
 
 React now `remount` your input so the state gets lost
 
@@ -389,17 +390,35 @@ This is exactly where the key prop comes in. By providing a key, you are giving 
 
 Now the interesting part!, When you use the index as a key, React thinks each position in the list is the same as before. So if you move the first item to the end, React just reuses the DOM nodes and Fibers at each position. That’s why the inputs still keep the text you typed they never got replaced, only the labels changed.
 
+But index as a key is not always wrong, Index as a key is fine when:
+- The list never changes at all
+- The items have no internal state — no inputs, no checkboxes, nothing 
+  the user interacts with
 
 <img src="/blog/key/keymeme.png" alt="React UI Runtime"  style={{ display: 'block', margin: '2rem auto' }} />
 
 
 # Math.random as a key 
 
-When we say it should be unique key it should stable unique key not a random number, I hope you 
-have guessed already what happens when you use `Math.random()` as a key
+When we say it should be a unique key, it should be a stable unique key not a random number, I hope you 
+have already guessed what happens when you use `Math.random()` as a key
 
 <img src="/blog/key/randomkey.svg" alt="React UI Runtime"  style={{ display: 'block', margin: '2rem auto' }} />
 
-react sees a different key when diffing and it deletes the DOM node and create it again as `Math.random()` produces
+React sees a different key when diffing and it deletes the DOM node and creates it again as `Math.random()` produces
 a random key on each render
 
+# what makes a good key? 
+
+A key can be anything unique as long as it doesn't change between 
+renders. [React docs](https://react.dev/learn/rendering-lists#where-to-get-your-key) 
+have a good section on where to get your keys from.
+
+# Conslusion 
+
+I hope this blog helped you understand why the `key` prop exists 
+and how it affects the reconciliation process in React. 
+Thanks for reading ❤️
+
+
+- If you want to understand diffing algorithm for array in react [Read More](https://jser.dev/react/2022/02/08/the-diffing-algorithm-for-array-in-react/)
