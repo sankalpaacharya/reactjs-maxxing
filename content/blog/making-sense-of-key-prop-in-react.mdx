@@ -3,7 +3,7 @@ title: "Making sense of 'key' prop in react"
 description: "Why React needs a key prop, how it affects reconciliation"
 date: "2026-03-11"
 topic: "React"
-draft: true
+draft: false
 ---
 
 
@@ -44,18 +44,8 @@ why React even needs key props to maintain the items in a list
 
 # Why does React even need a key?
 
-Let's begin with a Problem
-
-
-
 Let's say you have a product list array and you are rendering these product items on a screen and you have 
 button `sort by name` which allows the user to sort items according to it's name.
-
-I have to explain here, put sandpack here and we will see how not giving key messes up? 
-and we will take a look at what react is doing internally and that cause the mess 
-and now why we need a key 
-
-and later if we need, explain how react internally needs a key
 
 <img src="/blog/key/list.svg" alt="React UI Runtime"  style={{ display: 'block', margin: '2rem auto' }} />
 
@@ -90,7 +80,16 @@ marked `Laptop` fiber node as it needs deletion
 And we end up deleting and creating the same DOM node which simply would have been moved. It's fine for a single DOM node but 
 for thousands of nodes it would be a nightmare for performance
 
-But if we assign a unique stable identifier to each item, React can track exactly where it went in the UI tree.
+React has to make a decision here, but it has no way to track where each item came from or where it went. So how does it figure out what to delete, what to update, and what to keep?
+
+<img src="/blog/key/reconcile.svg" alt="React UI Runtime"  style={{ display: 'block', margin: '2rem auto' }} />
+
+Maybe we track through position? 
+
+During reconciliation, React compares the new UI tree with the previous one by checking each Fiber node's position and type. If the type of the element or component at the same position is different, React treats it as a completely new node. It deletes the existing Fiber and creates a new one instead of updating it.
+
+In this example, `span` and `b` have different element types, so React deletes the `span` Fiber and creates a new Fiber for `b`.
+But if the element type is same react will reuse the Fiber and the DOM node
 
 # Key on components
 
@@ -98,8 +97,6 @@ _THEN WHY DON'T OTHER COMPONENTS NEED A "KEY" PROP_
 <img src="/blog/key/confused.png" alt="React UI Runtime" width={400}  style={{ display: 'block', margin: '2rem auto' }} />
 
 
-
----
 Let's see this through an example
 
 Try it yourself type something in the input, then click the button to toggle between `Item1` and `Item2`.
@@ -213,18 +210,10 @@ provide the key, you will see input state still vanishes
 
 ```tsx 
 <div>
- <Item key={1} name="Item1" /> 
+ <Item name="Item1" /> 
  </div>
 
 ```
-
-<img src="/blog/key/reconcile.svg" alt="React UI Runtime"  style={{ display: 'block', margin: '2rem auto' }} />
-During reconciliation, React compares the new UI tree with the previous one by checking each Fiber node's position and type. If the type of the element or component at the same position is different, React treats it as a completely new node. It deletes the existing Fiber and creates a new one instead of updating it.
-
-In this example, `span` and `b` have different element types, so React deletes the `span` Fiber and creates a new Fiber for `b`.
-But if the element type is same react will reuse the Fiber and the DOM node
-
----
 
 <img src="/blog/key/compare.svg" alt="React UI Runtime" width="800" height="100" style={{ display: 'block', margin: '2rem auto' }} />
 
@@ -378,9 +367,9 @@ This is exactly where the key prop comes in. By providing a key, you are giving 
 
 # index as a Key
 
-```tsx
+```tsx {2-2}
   {items.map((item, index) => (
-        <li>
+        <li key={index}>
           <span className="label">{item.name}</span>
           <input placeholder={`Note for ${item.name}...`} />
         </li>
@@ -397,8 +386,19 @@ But index as a key is not always wrong, Index as a key is fine when:
 
 <img src="/blog/key/keymeme.png" alt="React UI Runtime"  style={{ display: 'block', margin: '2rem auto' }} />
 
+So was I right? not really, index just suppresses the warning. The moment your todo items have an edit input or a checkbox you'd hit exactly the state sticking bug we just saw.
+
 
 # Math.random as a key 
+
+```tsx {2-2}
+  {items.map((item, index) => (
+        <li key={Math.random()}>
+          <span className="label">{item.name}</span>
+          <input placeholder={`Note for ${item.name}...`} />
+        </li>
+  ))}
+```
 
 When we say it should be a unique key, it should be a stable unique key not a random number, I hope you 
 have already guessed what happens when you use `Math.random()` as a key
