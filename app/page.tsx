@@ -97,9 +97,6 @@ export default function Home() {
                   <motion.div
                     key={post.slug}
                     variants={item}
-                    layout
-                    initial="collapsed"
-                    whileHover="expanded"
                     className="group"
                   >
                     <Link
@@ -124,28 +121,21 @@ export default function Home() {
                         </span>
                       </div>
 
-                      {/* Hidden Details */}
-                      <motion.div
-                        variants={{
-                          collapsed: { height: 0, opacity: 0, marginTop: 0 },
-                          expanded: {
-                            height: "auto",
-                            opacity: 1,
-                            marginTop: 4,
-                          },
-                        }}
-                        transition={{ duration: 0.4, ease: [0.16, 1, 0.3, 1] }}
-                        className="overflow-hidden"
+                      {/* Description — inline expand using grid for smooth height animation */}
+                      <div
+                        className="grid grid-rows-[0fr] group-hover:grid-rows-[1fr] transition-[grid-template-rows] duration-300 ease-out"
                       >
-                        <div className="flex flex-col md:flex-row md:justify-between pl-9 pr-0 md:pr-14 pb-4 gap-4">
-                          <p className="text-sm text-muted-foreground/80 max-w-lg leading-relaxed font-serif italic">
-                            {post.description}
-                          </p>
-                          <span className="font-mono text-[10px] uppercase tracking-wider text-muted-foreground/60 shrink-0 pt-1">
-                            {post.topic}
-                          </span>
+                        <div className="overflow-hidden">
+                          <div className="flex flex-col md:flex-row md:justify-between pl-9 pr-0 md:pr-14 pb-4 gap-3">
+                            <p className="text-sm text-muted-foreground/80 max-w-lg leading-relaxed font-serif italic">
+                              {post.description}
+                            </p>
+                            <span className="font-mono text-[10px] uppercase tracking-wider text-muted-foreground/60 shrink-0 pt-1">
+                              {post.topic}
+                            </span>
+                          </div>
                         </div>
-                      </motion.div>
+                      </div>
                     </Link>
                   </motion.div>
                 ))}
