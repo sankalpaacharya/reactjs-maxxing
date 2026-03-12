@@ -21,6 +21,7 @@ import { ThreadBlockingDemo } from "@/components/blog/thread-blocking-demo";
 import { EventLoopDemo } from "@/components/blog/event-loop-demo";
 import { React15InputDemo } from "@/components/blog/react15-input-demo";
 import { LineExecutionDemo } from "@/components/blog/line-execution-demo";
+import { MdxImage } from "@/components/ui/mdx-image";
 import { cache } from "react";
 
 import { Quote } from "@/components/ui/quote";
@@ -53,6 +54,8 @@ const mdxComponents = {
   React15InputDemo,
   LineExecutionDemo,
   Quote,
+  // Override default img tag with optimized component for lazy loading + caching
+  img: MdxImage,
 };
 
 const CONTENT_DIR = path.join(process.cwd(), "content/blog");

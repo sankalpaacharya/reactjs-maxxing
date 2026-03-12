@@ -58,7 +58,7 @@ export default function Home() {
           className="w-full h-full object-cover"
         />
         {/* Dark overlay */}
-        <div className="absolute inset-0 bg-gradient-to-b from-black/40 via-black/20 to-background" />
+        <div className="absolute inset-0 bg-linear-to-b from-black/40 via-black/20 to-background" />
       </motion.div>
 
       <main className="max-w-2xl mx-auto px-6 py-16">
