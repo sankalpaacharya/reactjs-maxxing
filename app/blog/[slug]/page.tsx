@@ -7,6 +7,8 @@ import { TableOfContents } from "@/components/blog/table-of-contents";
 import { AskAIButtons } from "@/components/blog/ask-ai-buttons";
 import { Footer } from "@/components/footer";
 
+export const dynamic = "force-dynamic";
+
 export function generateStaticParams() {
   const slugs = getAllPostSlugs();
   return slugs.map((slug) => ({ slug }));
@@ -18,7 +20,6 @@ export async function generateMetadata({
   params: Promise<{ slug: string }>;
 }) {
   const { slug } = await params;
-  // Use fast frontmatter parsing (gray-matter) instead of full MDX compilation
   const post = getPostFrontmatter(slug);
   if (!post) return {};
 

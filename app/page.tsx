@@ -1,6 +1,9 @@
 import { getAllPosts } from "@/lib/mdx-data";
 import { PostsList, Banner, ContentWrapper } from "@/components/home/posts-list";
 
+export const dynamic = "force-static";
+export const revalidate = false;
+
 export default function Home() {
   // Fetch posts at build time / request time on server - NO client-side API call
   const allPosts = getAllPosts();

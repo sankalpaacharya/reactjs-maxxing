@@ -1,7 +1,4 @@
-"use client";
-
 import Link from "next/link";
-import { motion, AnimatePresence } from "framer-motion";
 
 export interface PostMeta {
   slug: string;
@@ -11,31 +8,9 @@ export interface PostMeta {
   topic: string;
 }
 
-const container = {
-  hidden: { opacity: 0 },
-  show: {
-    opacity: 1,
-    transition: {
-      staggerChildren: 0.1,
-    },
-  },
-};
-
-const item = {
-  hidden: { opacity: 0, y: 20 },
-  show: { opacity: 1, y: 0 },
-};
-
 export function PostsList({ posts }: { posts: PostMeta[] }) {
   return (
-    <AnimatePresence mode="wait">
-      <motion.div
-        key="all"
-        className="space-y-2"
-        variants={container}
-        initial="hidden"
-        animate="show"
-      >
+    <div className="space-y-2">
         <div className="flex items-end justify-between mb-8 border-b border-border/60 pb-2">
           <h1 className="text-2xl font-serif italic text-foreground/90">
             Contents
@@ -46,9 +21,8 @@ export function PostsList({ posts }: { posts: PostMeta[] }) {
         </div>
 
         {posts.map((post, index) => (
-          <motion.div
+          <div
             key={post.slug}
-            variants={item}
             className="group"
           >
             <Link
@@ -89,21 +63,15 @@ export function PostsList({ posts }: { posts: PostMeta[] }) {
                 </div>
               </div>
             </Link>
-          </motion.div>
+          </div>
         ))}
-      </motion.div>
-    </AnimatePresence>
+    </div>
   );
 }
 
 export function Banner() {
   return (
-    <motion.div
-      className="relative w-full h-48 md:h-64 overflow-hidden"
-      initial={{ opacity: 0, scale: 1.05 }}
-      animate={{ opacity: 1, scale: 1 }}
-      transition={{ duration: 0.8, ease: [0.16, 1, 0.3, 1] }}
-    >
+    <div className="relative w-full h-48 md:h-64 overflow-hidden">
       <img
         src="/image.png"
         alt="Blog Banner"
@@ -111,18 +79,14 @@ export function Banner() {
       />
       {/* Dark overlay */}
       <div className="absolute inset-0 bg-linear-to-b from-black/40 via-black/20 to-background" />
-    </motion.div>
+    </div>
   );
 }
 
 export function ContentWrapper({ children }: { children: React.ReactNode }) {
   return (
-    <motion.section
-      initial={{ opacity: 0, y: 20 }}
-      animate={{ opacity: 1, y: 0 }}
-      transition={{ duration: 0.6, delay: 0.4, ease: [0.16, 1, 0.3, 1] }}
-    >
+    <section>
       {children}
-    </motion.section>
+    </section>
   );
 }
