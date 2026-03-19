@@ -1,6 +1,10 @@
 import { notFound } from "next/navigation";
 import { getPostBySlug } from "@/lib/mdx";
-import { getAllPostSlugs, isScrollyPost, getPostFrontmatter } from "@/lib/mdx-data";
+import {
+  getAllPostSlugs,
+  isScrollyPost,
+  getPostFrontmatter,
+} from "@/lib/mdx-data";
 import { HugeiconsIcon } from "@hugeicons/react";
 import { ArrowLeft01Icon } from "@hugeicons/core-free-icons";
 import { TableOfContents } from "@/components/blog/table-of-contents";
@@ -26,6 +30,7 @@ export async function generateMetadata({
   const title = `${post.frontmatter.title} | Inside React`;
   const description = post.frontmatter.description;
   const url = `https://inside-react.vercel.app/blog/${slug}`;
+  const ogImage = post.frontmatter.ogImage;
 
   return {
     title,
@@ -39,12 +44,14 @@ export async function generateMetadata({
       publishedTime: post.frontmatter.date,
       authors: ["Sankalpa Acharya"],
       tags: [post.frontmatter.topic],
+      ...(ogImage && { images: [ogImage] }),
     },
     twitter: {
       card: "summary_large_image",
       title: post.frontmatter.title,
       description,
       creator: "@user_sankalpa",
+      ...(ogImage && { images: [ogImage] }),
     },
     alternates: {
       canonical: url,
@@ -73,71 +80,71 @@ export default async function BlogPost({
   return (
     <>
       <main className="min-h-screen relative">
-      {/* Header for normal blog posts */}
-      {!isScrolly && (
-        <div className="max-w-2xl mx-auto px-6">
-          <header className="pt-16 pb-8">
-            {/* Back button */}
-            <a
-              href="/"
-              className="inline-flex items-center gap-2 text-sm text-muted-foreground hover:text-foreground transition-colors mb-10 group"
-            >
-              <HugeiconsIcon
-                icon={ArrowLeft01Icon}
-                size={18}
-                className="group-hover:-translate-x-0.5 transition-transform"
-              />
-              <span>Back</span>
-            </a>
+        {/* Header for normal blog posts */}
+        {!isScrolly && (
+          <div className="max-w-2xl mx-auto px-6">
+            <header className="pt-16 pb-8">
+              {/* Back button */}
+              <a
+                href="/"
+                className="inline-flex items-center gap-2 text-sm text-muted-foreground hover:text-foreground transition-colors mb-10 group"
+              >
+                <HugeiconsIcon
+                  icon={ArrowLeft01Icon}
+                  size={18}
+                  className="group-hover:-translate-x-0.5 transition-transform"
+                />
+                <span>Back</span>
+              </a>
 
-            {/* Meta info - subtle and refined */}
-            <div className="flex items-center gap-3 mb-6 text-xs text-muted-foreground/60 uppercase tracking-[0.15em]">
-              <span>{post.frontmatter.topic}</span>
-              <span className="text-muted-foreground/30">·</span>
-              <span>
-                {new Date(post.frontmatter.date).toLocaleDateString("en-US", {
-                  year: "numeric",
-                  month: "short",
-                  day: "numeric",
-                })}
-              </span>
-            </div>
+              {/* Meta info - subtle and refined */}
+              <div className="flex items-center gap-3 mb-6 text-xs text-muted-foreground/60 uppercase tracking-[0.15em]">
+                <span>{post.frontmatter.topic}</span>
+                <span className="text-muted-foreground/30">·</span>
+                <span>
+                  {new Date(post.frontmatter.date).toLocaleDateString("en-US", {
+                    year: "numeric",
+                    month: "short",
+                    day: "numeric",
+                  })}
+                </span>
+              </div>
 
-            {/* Title - clean, readable */}
-            <h1 className="text-3xl md:text-4xl font-semibold tracking-tight text-foreground mb-6 leading-[1.3] italic">
-              {post.frontmatter.title}
-            </h1>
+              {/* Title - clean, readable */}
+              <h1 className="text-3xl md:text-4xl font-semibold tracking-tight text-foreground mb-6 leading-[1.3] italic">
+                {post.frontmatter.title}
+              </h1>
 
-            {/* Description - subtle, refined */}
-            <p className="text-base text-foreground/60 leading-relaxed max-w-xl">
-              {post.frontmatter.description}
-            </p>
+              {/* Description - subtle, refined */}
+              <p className="text-base text-foreground/60 leading-relaxed max-w-xl">
+                {post.frontmatter.description}
+              </p>
 
-            {/* Ask AI Buttons */}
-            <AskAIButtons slug={slug} title={post.frontmatter.title} />
+              {/* Ask AI Buttons */}
+              <AskAIButtons slug={slug} title={post.frontmatter.title} />
 
-            {/* Elegant separator */}
-            <div className="mt-12 w-16 h-px bg-muted-foreground/20" />
-          </header>
-        </div>
-      )}
+              {/* Elegant separator */}
+              <div className="mt-12 w-16 h-px bg-muted-foreground/20" />
+            </header>
+          </div>
+        )}
 
-      {/* Content wrapper with TOC */}
-      {!isScrolly ? (
-        <div className="relative max-w-2xl mx-auto px-6">
-          {/* MDX Content */}
-          <article className={articleClass}>{post.content}</article>
+        {/* Content wrapper with TOC */}
+        {!isScrolly ? (
+          <div className="relative max-w-2xl mx-auto px-6">
+            {/* MDX Content */}
+            <article className={articleClass}>{post.content}</article>
 
-          {/* Table of Contents - positioned to the right of content */}
-          <TableOfContents />
-        </div>
-      ) : (
-        <div className="relative">
-          <article className={articleClass}>{post.content}</article>
-        </div>
-      )}
-    </main>
-    <Footer />
+            {/* Table of Contents - positioned to the right of content */}
+            <TableOfContents />
+          </div>
+        ) : (
+          <div className="relative">
+            <article className={articleClass}>{post.content}</article>
+          </div>
+        )}
+      </main>
+      <Footer />
     </>
   );
 }

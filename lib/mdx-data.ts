@@ -23,6 +23,7 @@ export interface PostFrontmatter {
     date: string;
     topic: string;
     image: string;
+    ogImage?: string;
     draft?: boolean;
 }
 

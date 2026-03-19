@@ -39,7 +39,7 @@ function LiveClock() {
           hour: "numeric",
           minute: "2-digit",
           hour12: true,
-        })
+        }),
       );
     };
 
@@ -88,13 +88,13 @@ export function Header() {
               <HugeiconsIcon icon={social.icon} size={16} />
             </a>
           ))}
-          {/* <a
+          <a
             href="/hire-me"
             className="px-4 py-1.5 rounded-lg bg-primary hover:bg-primary/90 text-primary-foreground font-medium text-sm transition-colors flex items-center gap-2"
           >
             Hire me
             <span>→</span>
-          </a> */}
+          </a>
         </nav>
       </div>
     </header>
