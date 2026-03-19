@@ -128,9 +128,9 @@ export function isScrollyPost(slug: string): boolean {
     const parts = source.split('---');
     if (parts.length < 3) return false;
 
-    const content = parts.slice(2).join('---').trim();
+    const content = parts.slice(2).join('---').trimStart();
 
-    // Only return true if the post is PURELY scrolly (starts with !!steps)
-    // If it has mixed content (prose before scrolly), return false
-    return content.startsWith('## !!steps');
+    // Only return true if the post is PURELY scrolly.
+    // Mixed posts (prose before scrolly) should return false.
+    return content.startsWith('## !!steps') || content.startsWith('<Scrollycoding>');
 }

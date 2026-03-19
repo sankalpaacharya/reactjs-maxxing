@@ -77,15 +77,17 @@ export const getPostBySlug = cache(async (slug: string): Promise<PostWithContent
 
   let source = fs.readFileSync(filePath, "utf-8");
 
-  // Auto-wrap content in Scrollycoding if it contains !!steps blocks
-  // This allows MDX files to just use !!steps syntax without explicit wrapper
-  if (source.includes('## !!steps') && !source.includes('<Scrollycoding>')) {
-    // Split frontmatter and content
+  // Auto-wrap only PURE scrolly posts that start with !!steps.
+  // Mixed posts should use explicit <Scrollycoding>...</Scrollycoding> blocks.
+  if (!source.includes('<Scrollycoding>')) {
     const parts = source.split('---');
     if (parts.length >= 3) {
       const frontmatter = parts[1];
-      const content = parts.slice(2).join('---');
-      source = `---${frontmatter}---\n\n<Scrollycoding>\n${content}\n</Scrollycoding>`;
+      const content = parts.slice(2).join('---').trimStart();
+
+      if (content.startsWith('## !!steps')) {
+        source = `---${frontmatter}---\n\n<Scrollycoding fullBleed>\n${content}\n</Scrollycoding>`;
+      }
     }
   }
 

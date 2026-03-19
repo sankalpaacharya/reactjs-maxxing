@@ -133,7 +133,9 @@ export default async function BlogPost({
         {!isScrolly ? (
           <div className="relative max-w-2xl mx-auto px-6">
             {/* MDX Content */}
-            <article className={articleClass}>{post.content}</article>
+            <article className={`relative z-20 ${articleClass}`}>
+              {post.content}
+            </article>
 
             {/* Table of Contents - positioned to the right of content */}
             <TableOfContents />

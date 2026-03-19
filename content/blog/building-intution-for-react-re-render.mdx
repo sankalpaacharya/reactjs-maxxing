@@ -11,6 +11,8 @@ React rendering process is not really inteutive to many developers and it pretty
 how it renders so today in this blog we will do the deep dive on react rendering process with examples 
 from Big frontend as well.
 
+{/* show people building react server component form scratch  */}
+
 first explain the scheduling that hits the nail and make sense everything
 
 a lot of article explain about react are generally, react re-renders cause state props change 
@@ -33,5 +35,35 @@ why state change happens immeditemly
 
 # Sync Data with UI
 
-First the reason why you even wanna framework is either you saw 
+The role of many frontend frameworks either it's React, Vue, Angular, Selvte or Solid is to simply 
+sync your data with the UI. DOM manipulation is quite expensive because your browser has to 
+go through the process of repaint, relflow. 
 
+- reflow: calculating where your each elements, images and etc should be
+- Repaint: actualling drawing pixels in the screen
+
+Now all these library or the framework are just making 
+the ease for the Data syncing with the UI with a fewer DOM manipulation possible.
+
+Let's see through an example
+
+
+<Scrollycoding>
+
+## !!steps The Documentary
+
+I can't explain everything in this blog but I'll try to keep this short. 
+
+my recommendation would for you to watch the documentary it's awesome, all react core teams
+have explained how everything led to creating REACT. from people disliking it to become 
+the dominant frontend framework.
+
+### !!preview
+
+<div className="flex justify-center items-center h-full">
+  <iframe width="100%" height="315" src="https://www.youtube.com/embed/8pDqJVdNa44?si=vSljEd_feC1yPzjn" title="YouTube video player" frameBorder="0" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share" referrerPolicy="strict-origin-when-cross-origin" allowFullScreen></iframe>
+</div>
+
+</Scrollycoding>
+
+## Reactive Programming

@@ -1,98 +1,99 @@
-"use client"
+"use client";
 
-import { useEffect, useState } from "react"
-import { HugeiconsIcon } from "@hugeicons/react"
-import { LibraryIcon } from "@hugeicons/core-free-icons"
-import { cn } from "@/lib/utils"
+import { useEffect, useState } from "react";
+import { HugeiconsIcon } from "@hugeicons/react";
+import { LibraryIcon } from "@hugeicons/core-free-icons";
+import { cn } from "@/lib/utils";
 
 interface TOCItem {
-  id: string
-  text: string
-  level: number
+  id: string;
+  text: string;
+  level: number;
 }
 
 export function TableOfContents() {
-  const [headings, setHeadings] = useState<TOCItem[]>([])
-  const [activeId, setActiveId] = useState<string>("")
-  const [stars, setStars] = useState<number | null>(null)
+  const [headings, setHeadings] = useState<TOCItem[]>([]);
+  const [activeId, setActiveId] = useState<string>("");
+  const [stars, setStars] = useState<number | null>(null);
 
   useEffect(() => {
     fetch("https://api.github.com/repos/sankalpaacharya/inside-react")
       .then((res) => res.json())
       .then((data) => {
         if (typeof data.stargazers_count === "number") {
-          setStars(data.stargazers_count)
+          setStars(data.stargazers_count);
         }
       })
-      .catch(() => {})
-  }, [])
+      .catch(() => {});
+  }, []);
 
   useEffect(() => {
     // Extract headings from the article
-    const article = document.querySelector("article")
-    if (!article) return
+    const article = document.querySelector("article");
+    if (!article) return;
 
-    const headingElements = article.querySelectorAll("h1, h2, h3")
+    const headingElements = article.querySelectorAll("h1, h2, h3");
     const items: TOCItem[] = Array.from(headingElements)
       .map((heading) => {
         // Add IDs to headings if they don't have them
         if (!heading.id) {
-          const id = heading.textContent
-            ?.toLowerCase()
-            .replace(/[^a-z0-9]+/g, "-")
-            .replace(/(^-|-$)/g, "") || ""
-          heading.id = id
+          const id =
+            heading.textContent
+              ?.toLowerCase()
+              .replace(/[^a-z0-9]+/g, "-")
+              .replace(/(^-|-$)/g, "") || "";
+          heading.id = id;
         }
 
         return {
           id: heading.id,
           text: heading.textContent || "",
           level: parseInt(heading.tagName.substring(1)),
-        }
+        };
       })
-      .filter((item) => item.id && item.text)
+      .filter((item) => item.id && item.text);
 
-    setHeadings(items)
+    setHeadings(items);
 
     // Intersection Observer for active section
     const observer = new IntersectionObserver(
       (entries) => {
         entries.forEach((entry) => {
           if (entry.isIntersecting) {
-            setActiveId(entry.target.id)
+            setActiveId(entry.target.id);
           }
-        })
+        });
       },
       {
         rootMargin: "-100px 0px -66%",
         threshold: 0,
-      }
-    )
+      },
+    );
 
-    headingElements.forEach((heading) => observer.observe(heading))
+    headingElements.forEach((heading) => observer.observe(heading));
 
-    return () => observer.disconnect()
-  }, [])
+    return () => observer.disconnect();
+  }, []);
 
   const scrollToHeading = (id: string) => {
-    const element = document.getElementById(id)
+    const element = document.getElementById(id);
     if (element) {
-      const offset = 100
-      const elementPosition = element.getBoundingClientRect().top
-      const offsetPosition = elementPosition + window.pageYOffset - offset
+      const offset = 100;
+      const elementPosition = element.getBoundingClientRect().top;
+      const offsetPosition = elementPosition + window.pageYOffset - offset;
 
       window.scrollTo({
         top: offsetPosition,
         behavior: "smooth",
-      })
+      });
     }
-  }
+  };
 
-  if (headings.length === 0) return null
+  if (headings.length === 0) return null;
 
   return (
-    <aside className="hidden xl:block absolute left-full top-0 ml-16 w-56 h-full">
-      <div className="sticky top-32">
+    <aside className="hidden xl:block absolute left-full top-0 ml-16 w-56 h-full z-0">
+      <div className="sticky top-32 z-0">
         <div className="flex items-center gap-2 text-xs font-medium text-muted-foreground/60 mb-4">
           <HugeiconsIcon icon={LibraryIcon} size={14} />
           <span>On This Page</span>
@@ -109,7 +110,7 @@ export function TableOfContents() {
                 heading.level === 3 && "pl-4",
                 activeId === heading.id
                   ? "text-foreground font-medium"
-                  : "text-muted-foreground/70 hover:text-foreground"
+                  : "text-muted-foreground/70 hover:text-foreground",
               )}
             >
               {heading.text}
@@ -138,5 +139,5 @@ export function TableOfContents() {
         </a>
       </div>
     </aside>
-  )
+  );
 }

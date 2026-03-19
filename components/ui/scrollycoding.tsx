@@ -19,6 +19,7 @@ import {
   CheckmarkBadge01Icon,
   NoteIcon,
 } from "@hugeicons/core-free-icons";
+import { cn } from "@/lib/utils";
 
 const ICONS: Record<string, any> = {
   UserGroup: UserGroupIcon,
@@ -46,11 +47,13 @@ const Schema = Block.extend({
 type ScrollycodingProps = {
   children?: React.ReactNode;
   steps?: unknown[];
+  fullBleed?: boolean;
   [key: string]: unknown;
 };
 
 export function Scrollycoding(props: ScrollycodingProps) {
   const { steps } = parseProps(props, Schema);
+  const fullBleed = props.fullBleed !== false;
   const [activeStep, setActiveStep] = useState(0);
   const stepRefs = useRef<(HTMLDivElement | null)[]>([]);
   const hasScrolled = useRef(false);
@@ -94,11 +97,32 @@ export function Scrollycoding(props: ScrollycodingProps) {
   const activePreview = activeStep$?.preview;
 
   return (
-    <div className="scrollycoding w-screen relative left-1/2 right-1/2 -mx-[50vw] not-prose my-16 py-8 border-y border-border/30 bg-background/50">
-      <div className="flex flex-col lg:flex-row">
+    <div
+      className={cn(
+        "scrollycoding not-prose border-y border-border/30 bg-background/50",
+        fullBleed
+          ? "w-screen relative left-1/2 right-1/2 -mx-[50vw] my-10 py-4"
+          : "w-full my-10 py-4",
+      )}
+    >
+      <div className={cn("flex flex-col", "lg:flex-row")}>
         {/* Left: Text content */}
-        <div className="w-full lg:w-1/2 px-6 lg:pl-[max(24px,calc((100vw-1200px)/2))] lg:pr-8">
-          <div className="max-w-xl ml-auto space-y-32 pt-[30vh] pb-[50vh]">
+        <div
+          className={cn(
+            "w-full",
+            fullBleed
+              ? "lg:w-1/2 px-6 lg:pl-[max(24px,calc((100vw-1200px)/2))] lg:pr-8"
+              : "lg:w-1/2 px-4 md:px-6 lg:pr-6",
+          )}
+        >
+          <div
+            className={cn(
+              "max-w-xl ml-auto",
+              fullBleed
+                ? "space-y-24 pt-[14vh] pb-[24vh]"
+                : "space-y-20 pt-[12vh] pb-[22vh]",
+            )}
+          >
             {steps.map((step, index) => (
               <div
                 key={index}
@@ -154,8 +178,15 @@ export function Scrollycoding(props: ScrollycodingProps) {
         </div>
 
         {/* Right: Sticky code */}
-        <div className="hidden lg:block lg:w-1/2">
-          <div className="sticky top-0 h-screen flex items-center px-6 lg:pr-[max(24px,calc((100vw-1200px)/2))] lg:pl-8">
+        <div className={cn("hidden", "lg:block lg:w-1/2")}>
+          <div
+            className={cn(
+              "sticky top-0 h-screen flex items-center",
+              fullBleed
+                ? "px-6 lg:pr-[max(24px,calc((100vw-1200px)/2))] lg:pl-8"
+                : "px-4 md:px-6 lg:pl-6",
+            )}
+          >
             <div className="w-full relative max-h-[90vh] flex flex-col justify-center">
               <AnimatePresence mode="wait">
                 {activeCode ? (
