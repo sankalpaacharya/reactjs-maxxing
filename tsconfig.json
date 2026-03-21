@@ -35,7 +35,7 @@
     ".next/types/**/*.ts",
     ".next/dev/types/**/*.ts",
     "content/blog/a-deep-dive-into-react-fiber.mdx"
-  ],
+, "content/blog/how-react-streams-components.mdx"  ],
   "exclude": [
     "node_modules"
   ]
