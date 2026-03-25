@@ -35,7 +35,7 @@ export function ImagePresentationCarousel({
 
   return (
     <div className="my-8 rounded-xl border border-border bg-card p-4 not-prose">
-      <div className="relative h-120 w-full overflow-hidden rounded-lg border border-border bg-muted">
+      <div className="relative h-96 w-full overflow-hidden rounded-lg border border-border bg-muted">
         <Image
           src={currentImage.src}
           alt={currentImage.alt}
