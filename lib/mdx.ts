@@ -15,12 +15,14 @@ import { UserCardDemo } from "@/components/mental-model/user-card";
 import ReconcileDemo from "@/components/mental-model/reconcile-animation";
 import { TweetCard } from "@/components/ui/tweet-card";
 import { IntendedAudience } from "@/components/ui/intended-audience";
+import { InfoNote } from "@/components/ui/info-note";
 import { MagicTweet } from "@/components/ui/magic-tweet";
 import { GitHubIssueCard } from "@/components/ui/github-issue-card";
 import { ThreadBlockingDemo } from "@/components/blog/thread-blocking-demo";
 import { EventLoopDemo } from "@/components/blog/event-loop-demo";
 import { React15InputDemo } from "@/components/blog/react15-input-demo";
 import { LineExecutionDemo } from "@/components/blog/line-execution-demo";
+import { ImagePresentationCarousel } from "@/components/blog/image-presentation-carousel";
 import { MdxImage } from "@/components/ui/mdx-image";
 import { cache } from "react";
 
@@ -47,12 +49,14 @@ const mdxComponents = {
   TweetCard,
   ReconcileDemo,
   IntendedAudience,
+  InfoNote,
   MagicTweet,
   GitHubIssueCard,
   ThreadBlockingDemo,
   EventLoopDemo,
   React15InputDemo,
   LineExecutionDemo,
+  ImagePresentationCarousel,
   Quote,
   // Override default img tag with optimized component for lazy loading + caching
   img: MdxImage,
