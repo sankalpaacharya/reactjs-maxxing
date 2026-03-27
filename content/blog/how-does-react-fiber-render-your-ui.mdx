@@ -175,7 +175,6 @@ in the browser.
 React works in time slices, constantly checking if it has time to process more units of work. Once it notices that its current `5ms` slice is up, it yields control back to the browser. The browser then takes your onClick callback from the queue and runs it.
 
 <img src="/blog/scheduler/done.svg" alt="React UI Runtime" width="800" height="100" style={{ display: 'block', margin: '2rem auto' }} />
-How Does React Fiber Render Your UI
 nside that callback is the setCount function. Internally, setCount is just a state dispatcher it tells React, _this fiber has new work that needs to be scheduled._
 
 ## Schedule
