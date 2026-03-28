@@ -26,7 +26,7 @@ export function OpenSource() {
                         <div className="flex items-center justify-between">
                             <h3 className="text-lg font-medium text-foreground">Gaia</h3>
                             <div className="flex gap-4 text-sm shrink-0">
-                                <Link href="https://github.com/theexperiencecompany/gaia/issues?q=state%3Aclosed%20is%3Apr%20author%3Asankalpaacharya" target="_blank" className="text-muted-foreground hover:text-foreground transition-colors flex items-center gap-1">
+                                <Link href="https://github.com/theexperiencecompany/gaia/pulls?q=is%3Apr+is%3Aclosed+author%3Asankalpaacharya" target="_blank" className="text-muted-foreground hover:text-foreground transition-colors flex items-center gap-1">
                                     Contributions <HugeiconsIcon icon={ArrowUpRight01Icon} size={14} />
                                 </Link>
                             </div>
