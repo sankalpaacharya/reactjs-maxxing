@@ -9,6 +9,7 @@ import {
   LinkedinIcon,
   GithubIcon,
 } from "@hugeicons/core-free-icons";
+import { WebPet } from "./web-pet";
 
 const socialLinks = [
   {
@@ -54,6 +55,7 @@ function LiveClock() {
 export function Header() {
   return (
     <header className="border-b border-border bg-background">
+      <WebPet animal="deno" color="green" speed={4.8} scale={0.5} />
       <div className="px-6 py-4 flex items-center justify-between">
         <Link href="/" className="flex items-center gap-3 group">
           {/* Glassmorphism frame */}
