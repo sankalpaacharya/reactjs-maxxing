@@ -54,7 +54,7 @@ function LiveClock() {
 
 export function Header() {
   return (
-    <header className="border-b border-border bg-background">
+    <header className="border-b border-border bg-background relative">
       <WebPet animal="deno" color="green" speed={4.8} scale={0.5} />
       <div className="px-6 py-4 flex items-center justify-between">
         <Link href="/" className="flex items-center gap-3 group">
