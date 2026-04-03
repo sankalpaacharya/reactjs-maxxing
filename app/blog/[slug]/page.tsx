@@ -9,7 +9,7 @@ import { HugeiconsIcon } from "@hugeicons/react";
 import { ArrowLeft01Icon } from "@hugeicons/core-free-icons";
 import { TableOfContents } from "@/components/blog/table-of-contents";
 import { AskAIButtons } from "@/components/blog/ask-ai-buttons";
-import { LiveReadersBadge } from "@/components/blog/live-readers-badge";
+import { SneakEmojiDialog } from "@/components/blog/sneak-emoji-dialog";
 import { Footer } from "@/components/footer";
 
 export const dynamic = "force-dynamic";
@@ -81,7 +81,7 @@ export default async function BlogPost({
   return (
     <>
       <main className="min-h-screen relative">
-        <LiveReadersBadge slug={slug} />
+        <SneakEmojiDialog />
         {/* Header for normal blog posts */}
         {!isScrolly && (
           <div className="max-w-2xl mx-auto px-6">
