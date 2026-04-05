@@ -50,9 +50,9 @@ It has two choices. Either it throws away everything the server sent and recreat
 # Hydration in React
 Let's see how React specifically does it.
 
-React maintains something called a fiber tree internally. Think of it as React's own in-memory model of your entire UI. When React boots up on the client, it starts building this fiber tree from top to bottom, creating a fiber object for every single element in your UI.
+In a normal client side render, React is responsible for creating everything. It builds the fiber tree and the DOM nodes at the same time, so every fiber already has a reference to its DOM node from birth. Each fiber object has a property called `stateNode` which holds that reference.
 
-Each fiber object has a property called `stateNode`, which holds a direct reference to the actual DOM node.
+
 ```tsx
 fiber.stateNode = dom#button
 ```
@@ -60,11 +60,14 @@ Now, in a normal client-side render, React creates the DOM node itself and immed
 
 But for server-rendered DOM, the nodes already exist in the browser with no event listeners attached. React needs to find each one and wire it up. So that's where hydration comes into play.
 
-During hydration, React walks the fiber tree top to bottom, and instead of creating new DOM nodes, it looks at the existing DOM that came from the server and asks: is there already a node here for this?
+During hydration, React does not already have a fiber tree to walk.
 
-If yes, it takes it. It stores that server-rendered DOM node in `stateNode` and attaches all the event listeners. But if the node doesn't match what React expected, say the server rendered a `<div>` but React expected a `<button>`, React has no idea what to do. That's your hydration error.
+When `hydrateRoot()` runs, React starts building the fiber tree from scratch while at the same time walking the existing DOM that came from the server. At each step, React checks whether the current DOM node matches what it expects to render.
+
+If it matches, React reuses that DOM node. It stores that server-rendered DOM node in stateNode and attaches all the event listeners. But if the node doesn't match what React expected, say the server rendered a `<div>` but React expected a `<button>`, that's a hydration mismatch.
+
+React doesn't get confused here. It has specific ways to recover. In older versions it would discard that part of the DOM and re-render it on the client. In newer versions, it can recover more selectively depending on where the mismatch happens.
 
 
 # Conclusion
 At the end of the day, hydration is about adding interactivity to a DOM rendered on the server. But I hope this helped you look at it beyond just that. Because really it is about connecting the DOM generated on the server with the client side runtime so that it can take ownership and manage everything going forward. The _watering dry HTML_ analogy is not wrong, it just does not tell the whole story.
-
