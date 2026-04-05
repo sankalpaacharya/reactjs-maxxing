@@ -1,0 +1,70 @@
+---
+title: "Why frontend frameworks need hydration"
+description: "SSR is not new. So why do modern frameworks need hydration?"
+date: "2026-04-05"
+topic: "React"
+draft: false
+---
+
+Hydration in React was always pretty confusing for me. I always had this one doubt: if we need hydration because we are doing server-side rendering, then why did we never need it when we were using PHP, Django, or Express? Why do modern frontend frameworks need it at all?
+
+
+If I ask you what React hydration is, you will probably say the same thing we have all been hearing for years: _React hydration is like watering dry HTML by adding interactivity._ And you are not wrong. But bear with me, because by the end of this blog you will know exactly why it has to exist in the first place.
+
+# Old SSR
+We have been doing server-side rendering for a long time, whether it's PHP, Django, or Express with EJS. We generate an HTML string on the server side and send it to the client, and the framework's work is done. We never had to do anything called hydration in any of them.
+
+If we ever wanted to add any interactivity to the website, we did something like this:
+ 
+```tsx 
+<button id="btn">Click me</button>
+<p id="text"></p>
+
+<script>
+  document.getElementById("btn").addEventListener("click", () => {
+    document.getElementById("text").innerText = "Hello from client!";
+  });
+</script>
+```
+Now here we are manually handling everything ourselves: finding a DOM node, attaching the behavior, and keeping track of what does what. Nobody handles the rendering of the UI; we handle it ourselves, and there is no runtime lying on the client side to manage the rendering process.
+
+# Framework
+Unlike back then, the frameworks we use today don't walk away after giving an HTML string; they stay alive in the browser, sitting in memory. They are the ones responsible for every update and state change that happens after the page loads. And in order to do that, they need to keep track of every single node in the UI internally.
+
+
+# CSR vs SSR
+In client-side rendering, the framework is responsible for everything. You get a blank `index.html` and a JavaScript bundle, and the framework builds the entire UI from scratch right there in the browser. Since it built everything itself, it knows everything. Every DOM node is accounted for internally. You update the state, and it knows exactly what to change.
+
+But now imagine we do some server-side rendering. The server builds the HTML and sends it down, the browser paints it, and then the framework boots up on the client. And it finds a DOM it didn't build.
+So how does something that needs to own the DOM going forward take ownership of nodes it never created?
+
+It has two choices. Either it throws away everything the server sent and recreates the entire UI from scratch like a normal client-side app, which is wasteful and defeats the whole point of server-side rendering, or it walks the existing DOM, finds each node, and wires it into its internals one by one. That second option is hydration.
+
+
+> # Hydration
+> Hydration is the name given to the process in JavaScript frameworks of initializing the page in the browser after it has previously been server-rendered. While the server can produce the initial HTML, we need to augment this output with event handlers and initialize our application state so that it can be interactive in the browser
+> - Ryan Carniato
+
+
+
+# Hydration in React
+Let's see how React specifically does it.
+
+React maintains something called a fiber tree internally. Think of it as React's own in-memory model of your entire UI. When React boots up on the client, it starts building this fiber tree from top to bottom, creating a fiber object for every single element in your UI.
+
+Each fiber object has a property called `stateNode`, which holds a direct reference to the actual DOM node.
+```tsx
+fiber.stateNode = dom#button
+```
+Now, in a normal client-side render, React creates the DOM node itself and immediately stores the reference in `stateNode`. It built it, done.
+
+But for server-rendered DOM, the nodes already exist in the browser with no event listeners attached. React needs to find each one and wire it up. So that's where hydration comes into play.
+
+During hydration, React walks the fiber tree top to bottom, and instead of creating new DOM nodes, it looks at the existing DOM that came from the server and asks: is there already a node here for this?
+
+If yes, it takes it. It stores that server-rendered DOM node in `stateNode` and attaches all the event listeners. But if the node doesn't match what React expected, say the server rendered a `<div>` but React expected a `<button>`, React has no idea what to do. That's your hydration error.
+
+
+# Conclusion
+At the end of the day, hydration is about adding interactivity to a DOM rendered on the server. But I hope this helped you look at it beyond just that. Because really it is about connecting the DOM generated on the server with the client side runtime so that it can take ownership and manage everything going forward. The _watering dry HTML_ analogy is not wrong, it just does not tell the whole story.
+
