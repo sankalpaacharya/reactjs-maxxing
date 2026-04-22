@@ -1,6 +1,6 @@
 ---
-title: "Out of order streaming"
-description: "Why React needs a key prop, how it affects reconciliation"
+title: "How React streams UI out of order"
+description: "A deep dive into how React streams and renders UI out of order using Suspense boundaries"
 date: "2026-03-11"
 topic: "React"
 draft: true
@@ -20,29 +20,13 @@ Most streaming follows an order where you would see `chunk(1)`, `chunk(2)` ... `
 
 But the interesting thing about React Server Components and Suspense is that it doesn't follow that order. You can stream components in any order like `component(2)`, `component(N)` ... `component(1)`. That's what this blog is about.
 
-Before we dive into how react does this, let's have a quick recap on how we even got here.
-
 <IntendedAudience>
 This blog is for React developers who are comfortable with basic React concepts like
 Suspense and Server Components. This blog focuses on how React handles streaming
 internally and what makes out-of-order streaming different from regular streaming.
 </IntendedAudience>
 
-# PHP to RSC
-
-For many years, web applications were built using server-side rendering with technologies like PHP. The server generated full HTML pages, and the browser simply displayed them.
-
-jQuery got popular, we started adding more interactivity directly in the browser. This made websites feel more dynamic, but the core rendering still remained server-driven.
-
-Later, rendering shifted heavily to the client. The browser now downloads a large JavaScript bundle, executes it, and builds the UI on the client side. This improved interactivity but introduced new problems: slow initial load, heavy JavaScript execution, and users sometimes seeing a blank screen before anything appears. SEO also became harder in early SPA setups.
-
-<img src="/blog/oos/mrbean.png" alt="React UI Runtime" width={500}  style={{ display: 'block', margin: '2rem auto' }} />
-
-To solve this, SSR came back in modern frameworks. The server renders the full HTML, sends it to the browser, the user sees content immediately, and then React hydrates it with interactivity. LCP improved, SEO got better.
-
-<img src="/blog/oos/pewdiepie.png" alt="React UI Runtime" width={500}  style={{ display: 'block', margin: '2rem auto' }} />
-
-But it still had a problem. The user has to wait for the full HTML to be rendered on the server before getting anything, and the bundle size remained the same for hydration.
+## Tradtional SSR
 
 Take this as an example:
 
@@ -304,4 +288,4 @@ $   = complete (actual content is in the DOM)
 
 This is what makes React's streaming different from just chunking HTML. A regular HTML stream is forced to be in order because HTML parsing is sequential. React works around this by using the DOM as a staging area, sending components as hidden divs, and using JavaScript to place them in the right spot at the right time.
 
-I hope you enjoyed reading the blog 
+I hope you enjoyed reading the blog ❤️
