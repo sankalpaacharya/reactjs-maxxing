@@ -25,6 +25,7 @@ import { LineExecutionDemo } from "@/components/blog/line-execution-demo";
 import { ImagePresentationCarousel } from "@/components/blog/image-presentation-carousel";
 import { MdxImage } from "@/components/ui/mdx-image";
 import { cache } from "react";
+import { GaiaCodeBlock } from "@/components/ui/code-block";
 
 import { Quote } from "@/components/ui/quote";
 
@@ -58,6 +59,7 @@ const mdxComponents = {
   LineExecutionDemo,
   ImagePresentationCarousel,
   Quote,
+  GaiaCodeBlock,
   // Override default img tag with optimized component for lazy loading + caching
   img: MdxImage,
 };

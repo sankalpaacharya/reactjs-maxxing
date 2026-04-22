@@ -1,0 +1,307 @@
+---
+title: "Out of order streaming"
+description: "Why React needs a key prop, how it affects reconciliation"
+date: "2026-03-11"
+topic: "React"
+draft: true
+---
+
+## The Intro
+
+React supported streaming long before server components. React 18 already had `renderToPipeableStream()` and
+`renderToReadableStream()`. And it's also not a new thing on the browser side either. Browsers natively support streaming HTML,
+they start rendering as they receive chunks.
+
+See this simple demo.
+
+<img src="/blog/oos/streaming.gif" alt="React UI Runtime"  style={{ display: 'block', margin: '2rem auto' }} />
+
+Most streaming follows an order where you would see `chunk(1)`, `chunk(2)` ... `chunk(N-1)`, `chunk(N)`.
+
+But the interesting thing about React Server Components and Suspense is that it doesn't follow that order. You can stream components in any order like `component(2)`, `component(N)` ... `component(1)`. That's what this blog is about.
+
+Before we dive into how react does this, let's have a quick recap on how we even got here.
+
+<IntendedAudience>
+This blog is for React developers who are comfortable with basic React concepts like
+Suspense and Server Components. This blog focuses on how React handles streaming
+internally and what makes out-of-order streaming different from regular streaming.
+</IntendedAudience>
+
+# PHP to RSC
+
+For many years, web applications were built using server-side rendering with technologies like PHP. The server generated full HTML pages, and the browser simply displayed them.
+
+jQuery got popular, we started adding more interactivity directly in the browser. This made websites feel more dynamic, but the core rendering still remained server-driven.
+
+Later, rendering shifted heavily to the client. The browser now downloads a large JavaScript bundle, executes it, and builds the UI on the client side. This improved interactivity but introduced new problems: slow initial load, heavy JavaScript execution, and users sometimes seeing a blank screen before anything appears. SEO also became harder in early SPA setups.
+
+<img src="/blog/oos/mrbean.png" alt="React UI Runtime" width={500}  style={{ display: 'block', margin: '2rem auto' }} />
+
+To solve this, SSR came back in modern frameworks. The server renders the full HTML, sends it to the browser, the user sees content immediately, and then React hydrates it with interactivity. LCP improved, SEO got better.
+
+<img src="/blog/oos/pewdiepie.png" alt="React UI Runtime" width={500}  style={{ display: 'block', margin: '2rem auto' }} />
+
+But it still had a problem. The user has to wait for the full HTML to be rendered on the server before getting anything, and the bundle size remained the same for hydration.
+
+Take this as an example:
+
+```tsx
+async function ProductPage() {
+  const product = await getProduct(); // 50ms
+  const recommendations = await getRecommendations(); // 800ms
+  const reviews = await getReviews(); // 300ms
+
+  return (
+    <>
+      <Navbar />
+      <ProductDetails product={product} />
+      <Reviews reviews={reviews} />
+      <Recommendations recommendations={recommendations} />
+      <Footer />
+    </>
+  );
+}
+```
+
+Here even though `Footer` and `Navbar` have nothing to do with data fetching, they are still blocked. The whole page waits for `getRecommendations()` to finish before anything is sent.
+
+It would be really nice if we could let the user see components that don't need data right away.
+
+# Streaming
+
+Okay, we can solve this by introducing streaming.
+
+<img src="/blog/oos/inorderstreaming.gif" alt="React UI Runtime"  style={{ display: 'block', margin: '2rem auto' }} />
+
+But streaming alone has a limitation, did you spot it?
+
+## In-order streaming
+
+Even though we are streaming and the user doesn't have to wait for `ProductDetails` to see `Navbar`, the `Footer` is still blocked because `Recommendations` is still loading. This is called in-order streaming. Each component comes in sequence, in the order they appear in the HTML.
+
+<InfoNote>
+This was a deliberate attempt to show you in-order streaming in Next.js. You can't do it directly, I had to force it.
+</InfoNote>
+
+## Out-of-order streaming
+
+In-order streaming solves a problem but doesn't fully solve the problem.
+
+Here's the core idea: what if we could send `Navbar` and `Footer` immediately, drop a placeholder where the slow components will go, and then swap those placeholders with the real content once the data is ready? No waiting, no blocking, completely independent.
+
+That's out-of-order streaming. There is no specific order. Components arrive whenever their data is ready.
+
+React 19 introduced React Server Components and a new `Suspense` that makes this possible. You wrap your slow components in `<Suspense>` with a fallback UI, and React handles the rest.
+
+<img src="/blog/oos/outoforder.gif" alt="React UI Runtime"  style={{ display: 'block', margin: '2rem auto' }} />
+
+Pretty cool right? Now let's dig into how React actually pulls this off.
+
+# Internals
+
+The trick React uses is simple when you say it out loud: send what you have immediately, leave a marked placeholder for what you don't, then swap it using JavaScript once the server resolves the data.
+
+That's it. Everything below is just the implementation of that idea.
+
+If you look at the actual HTML stream coming from the server, you would see something like this:
+
+<img src="/blog/oos/streams.svg" alt="React UI Runtime"  style={{ display: 'block', margin: '2rem auto' }} />
+
+```html
+<header>Navbar</header>
+<!--$?-->
+<template id="B:0"></template>
+<div>loading..</div>
+<!--/$-->
+<!--$?-->
+<template id="B:1"></template>
+<div>loading...</div>
+<!--/$-->
+<!--$?-->
+<template id="B:2"></template>
+<div>loading...</div>
+<!--/$-->
+<footer>Footer</footer>
+```
+
+`Navbar` and `Footer` are already there. The slow components each have a suspense boundary with a fallback div.
+
+Let's look at `ProductDetails` specifically:
+
+```html
+<!--$?-->
+<template id="B:0"></template>
+<div>loading..</div>
+<!--/$-->
+```
+
+`<!--$?-->` and `<!--/$-->` are the suspense boundary markers. The `<template>` tag is the placeholder that will get replaced. The `<div>loading..</div>` is your fallback UI.
+
+`id="B:0"` is how React identifies which placeholder to swap when the resolved component arrives.
+
+The `$?` in the comment means the suspense boundary is still pending, the fallback is showing and we haven't received the real data yet.
+
+<img src="/blog/oos/streamsummary.svg" alt="React UI Runtime"  style={{ display: 'block', margin: '2rem auto' }} />
+
+I hope it's making sense for you!, I strongly recommend you to open a nextjs project and open a developer tool 
+and try it yourself!
+
+At this point I strongly recommend opening a Next.js project, popping open DevTools, and checking the network tab. Seeing the hidden divs and script tags streaming in live makes everything click way faster than reading about it.
+
+- [site link](https://oos-lime.vercel.app/check)
+
+## Component back to client
+
+Once the data resolves on the server, React streams the component back to the client. It looks like this:
+
+```html
+<div hidden id="S:0">
+  <section>ProductDetails</section>
+</div>
+```
+
+Notice it's a **hidden** div. React doesn't put it directly in the right place, it parks it off-screen with `id="S:0"`. Then right after, it streams a small `<script>` tag:
+
+```html
+<script>
+  $RC("B:0", "S:0")
+</script>
+```
+
+<img src="/blog/oos/stream2.svg" alt="React UI Runtime"  style={{ display: 'block', margin: '2rem auto' }} />
+
+This is where the swap happens. `$RC` is a function React already sent earlier in the stream so the client has it ready. Let's look at all three functions React uses to make this work.
+
+```js [fold=10-60]
+<script>
+  $RB = [];
+  $RV = function (a) {
+    $RT = performance.now();
+    for (var b = 0; b < a.length; b += 2) {
+      var c = a[b],
+        e = a[b + 1];
+      null !== e.parentNode && e.parentNode.removeChild(e);
+      var f = c.parentNode;
+      if (f) {
+        var g = c.previousSibling,
+          h = 0;
+        do {
+          if (c && 8 === c.nodeType) {
+            var d = c.data;
+            if ("/$" === d || "/&" === d)
+              if (0 === h) break;
+              else h--;
+            else "$" !== d && "$?" !== d && "$~" !== d && "$!" !== d && "&" !== d || h++;
+          }
+          d = c.nextSibling;
+          f.removeChild(c);
+          c = d;
+        } while (c);
+        for (; e.firstChild; ) f.insertBefore(e.firstChild, c);
+        g.data = "$";
+        g._reactRetry && requestAnimationFrame(g._reactRetry);
+      }
+    }
+    a.length = 0;
+  };
+  $RC = function (a, b) {
+    if ((b = document.getElementById(b)))
+      (a = document.getElementById(a))
+        ? ((a.previousSibling.data = "$~"),
+          $RB.push(a, b),
+          2 === $RB.length &&
+            ("number" !== typeof $RT
+              ? requestAnimationFrame($RV.bind(null, $RB))
+              : ((a = performance.now()),
+                setTimeout(
+                  $RV.bind(null, $RB),
+                  2300 > a && 2E3 < a ? 2300 - a : $RT + 300 - a,
+                ))))
+        : b.parentNode.removeChild(b);
+  };
+  $RC("B:0", "S:0");
+</script>
+```
+
+<img src="/blog/oos/swap.png" alt="React UI Runtime"  style={{ display: 'block', margin: '2rem auto' }} />
+
+Three things to focus on: the `$RB` queue, the `$RC` function, and the `$RV` function.
+
+# $RC
+
+```tsx
+$RC = function(a, b) {
+  if (b = document.getElementById(b))
+    (a = document.getElementById(a)) 
+      ? (/* replace logic */)
+      : b.parentNode.removeChild(b)
+}
+```
+
+`$RC` takes two arguments. `a` is the template id like `B:0` and `b` is the resolved component id like `S:0`.
+
+First it tries to find the resolved component div using `document.getElementById(b)`. If it can't find it, it removes the component and does nothing. If it finds it, it then looks for the template element using `document.getElementById(a)`.
+
+If the template is found, it marks the suspense boundary as queued by changing `$?` to `$~` on the previous sibling comment node, then pushes both elements into the `$RB` queue:
+
+```tsx
+a.previousSibling.data = "$~"
+$RB.push(a, b)
+```
+
+Once there are 2 items in the queue it schedules the actual swap using `requestAnimationFrame`. It doesn't swap immediately, it batches. This is intentional, if multiple components resolve around the same time React can group all the DOM operations into a single frame instead of thrashing the DOM one swap at a time.
+
+# $RB
+
+`$RB` is just an array acting as a queue. React pushes pairs of `[template, resolved]` into it. The actual swap doesn't happen on every `$RC` call, it waits until there's at least one pair and schedules `$RV` to run on the next frame.
+
+# $RV
+
+This is where the actual swap happens.
+
+```tsx
+$RV = function(a) {
+  for (var b = 0; b < a.length; b += 2) {
+    var c = a[b],    // template element (B:0)
+        e = a[b+1]; // resolved component (S:0)
+    ...
+  }
+}
+```
+
+It loops through `$RB` two items at a time since we push pairs.
+
+First it detaches the resolved component from its hidden div so it's no longer hidden.
+
+Then it walks through all the sibling nodes inside the suspense boundary, removing them one by one. This is how it clears the fallback UI. Those loading spinners you wrote? Gone.
+
+```tsx
+do {
+  d = c.nextSibling;
+  f.removeChild(c);
+  c = d;
+} while (c);
+```
+
+Then it takes all the children from the resolved component and inserts them before the closing comment of the suspense boundary.
+
+```tsx
+for (; e.firstChild;) f.insertBefore(e.firstChild, c);
+```
+
+Finally it updates the boundary comment from `$~` to `$`, meaning the suspense is resolved. If there's a `_reactRetry` attached to the boundary node it fires that too, which is how React handles concurrent mode retries.
+
+The `$?` → `$~` → `$` progression is the full lifecycle of a suspense boundary:
+
+```
+$?  = pending  (fallback is showing)
+$~  = queued   (resolved content is ready, waiting for RAF)
+$   = complete (actual content is in the DOM)
+```
+
+# Putting it all together
+
+This is what makes React's streaming different from just chunking HTML. A regular HTML stream is forced to be in order because HTML parsing is sequential. React works around this by using the DOM as a staging area, sending components as hidden divs, and using JavaScript to place them in the right spot at the right time.
+
+I hope you enjoyed reading the blog 
