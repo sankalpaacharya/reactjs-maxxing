@@ -1,5 +1,5 @@
 ---
-title: "How React streams UI out of order"
+title: "How React streams UI out of order and still manages to keep order"
 description: "A deep dive into how React streams and renders UI out of order using Suspense boundaries"
 date: "2026-03-11"
 topic: "React"
@@ -65,14 +65,14 @@ But streaming alone has a limitation, did you spot it?
 Even though we are streaming and the user doesn't have to wait for `ProductDetails` to see `Navbar`, the `Footer` is still blocked because `Recommendations` is still loading. This is called in-order streaming. Each component comes in sequence, in the order they appear in the HTML.
 
 <InfoNote>
-This was a deliberate attempt to show you in-order streaming in Next.js. You can't do it directly, I had to force it.
+This was a deliberate attempt to show you in-order streaming in Next.js. You can't do it directly.
 </InfoNote>
 
 ## Out-of-order streaming
 
 In-order streaming solves a problem but doesn't fully solve the problem.
 
-Here's the core idea: what if we could send `Navbar` and `Footer` immediately, drop a placeholder where the slow components will go, and then swap those placeholders with the real content once the data is ready? No waiting, no blocking, completely independent.
+what if we could send `Navbar` and `Footer` immediately, drop a placeholder(marker) where the slow components will go, and then swap those placeholders with the real content once the data is ready? No waiting, no blocking, completely independent.
 
 That's out-of-order streaming. There is no specific order. Components arrive whenever their data is ready.
 
@@ -127,9 +127,6 @@ Let's look at `ProductDetails` specifically:
 The `$?` in the comment means the suspense boundary is still pending, the fallback is showing and we haven't received the real data yet.
 
 <img src="/blog/oos/streamsummary.svg" alt="React UI Runtime"  style={{ display: 'block', margin: '2rem auto' }} />
-
-I hope it's making sense for you!, I strongly recommend you to open a nextjs project and open a developer tool 
-and try it yourself!
 
 At this point I strongly recommend opening a Next.js project, popping open DevTools, and checking the network tab. Seeing the hidden divs and script tags streaming in live makes everything click way faster than reading about it.
 
@@ -282,7 +279,41 @@ The `$?` → `$~` → `$` progression is the full lifecycle of a suspense bounda
 $?  = pending  (fallback is showing)
 $~  = queued   (resolved content is ready, waiting for RAF)
 $   = complete (actual content is in the DOM)
+
 ```
+
+## Breaking the suspense 
+since React is just looking for `<template id="B:0">` in the DOM, what happens if you manually put one in yourself?
+
+```tsx 
+<main >
+--
+  <div>
+    hello
+    <template id="B:0">hello testing</template>
+  </div>
+--
+  <Navbar />
+
+  <Suspense fallback={<div>loading..</div>}>
+    <ProductDetails />
+  </Suspense>
+
+  <Suspense fallback={<div>loading...</div>}>
+    <Reviews />
+  </Suspense>
+
+  <Suspense fallback={<div>loading...</div>}>
+    <Recommendations />
+  </Suspense>
+  <Footer />
+</main>
+```
+i intentionally added a `<template id="B:0">` inside a random div. React doesn't know it's a fake. when `$RC("B:0", "S:0")` runs, it just does `document.getElementById("B:0")` and it finds yours first.
+so instead of swapping the actual ProductDetails placeholder, it swaps your random div.
+
+
+<img src="/blog/oos/breaking.gif" alt="React UI Runtime"  style={{ display: 'block', margin: '2rem auto' }} />
 
 # Putting it all together
 

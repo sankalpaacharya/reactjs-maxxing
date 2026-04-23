@@ -30,19 +30,22 @@ export function PostsList({ posts }: { posts: PostMeta[] }) {
               className="block w-full hover:opacity-100 opacity-80 transition-opacity"
             >
               {/* TOC Row */}
-              <div className="flex items-baseline gap-3 py-3">
+              <div className="flex items-start gap-3 py-3">
                 <span className="shrink-0 font-mono text-xs text-muted-foreground w-6">
                   {(index + 1).toString().padStart(2, "0")}.
                 </span>
 
-                <h2 className="shrink-0 font-serif text-lg md:text-xl font-medium text-foreground italic transition-all">
+                <h2
+                  className="min-w-0 font-serif text-lg md:text-xl font-medium text-foreground italic leading-snug line-clamp-2 text-balance break-words transition-all"
+                  title={post.title}
+                >
                   {post.title}
                 </h2>
 
                 {/* Dotted Leader */}
-                <span className="grow border-b border-dotted border-muted-foreground/30 mx-2" />
+                <span className="grow border-b border-dotted border-muted-foreground/30 mx-2 mt-[0.55rem] md:mt-[0.6rem]" />
 
-                <span className="shrink-0 font-mono text-xs text-muted-foreground">
+                <span className="shrink-0 font-mono text-xs text-muted-foreground mt-[0.2rem] md:mt-[0.25rem]">
                   {post.date}
                 </span>
               </div>
