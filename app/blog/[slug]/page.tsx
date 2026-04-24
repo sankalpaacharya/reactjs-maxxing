@@ -38,7 +38,7 @@ export async function generateMetadata({
   const ogImageUrl = new URL(ogImage, metadataBase).toString();
   const twitterImageUrl = new URL(
     post.frontmatter.ogImage ?? defaultTwitterImage,
-    metadataBase
+    metadataBase,
   ).toString();
   const ogImages = post.frontmatter.ogImage
     ? [{ url: ogImageUrl }]
