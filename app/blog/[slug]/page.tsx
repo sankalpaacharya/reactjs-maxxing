@@ -31,9 +31,25 @@ export async function generateMetadata({
   const title = `${post.frontmatter.title} | Inside React`;
   const description = post.frontmatter.description;
   const url = `https://inside-react.vercel.app/blog/${slug}`;
+  const metadataBase = new URL("https://inside-react.vercel.app");
   const defaultOgImage = "/opengraph-image";
   const defaultTwitterImage = "/twitter-image";
   const ogImage = post.frontmatter.ogImage ?? defaultOgImage;
+  const ogImageUrl = new URL(ogImage, metadataBase).toString();
+  const twitterImageUrl = new URL(
+    post.frontmatter.ogImage ?? defaultTwitterImage,
+    metadataBase
+  ).toString();
+  const ogImages = post.frontmatter.ogImage
+    ? [{ url: ogImageUrl }]
+    : [
+        {
+          url: ogImageUrl,
+          width: 1200,
+          height: 630,
+          alt: post.frontmatter.title,
+        },
+      ];
 
   return {
     title,
@@ -47,14 +63,14 @@ export async function generateMetadata({
       publishedTime: post.frontmatter.date,
       authors: ["Sankalpa Acharya"],
       tags: [post.frontmatter.topic],
-      images: [ogImage],
+      images: ogImages,
     },
     twitter: {
       card: "summary_large_image",
       title: post.frontmatter.title,
       description,
       creator: "@user_sankalpa",
-      images: [post.frontmatter.ogImage ?? defaultTwitterImage],
+      images: [twitterImageUrl],
     },
     alternates: {
       canonical: url,
