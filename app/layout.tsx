@@ -32,7 +32,7 @@ export const metadata: Metadata = {
     description: "Deep dives into React internals, Fiber architecture, and modern web development",
     images: [
       {
-        url: "/og-image.png",
+        url: "/opengraph-image",
         width: 1200,
         height: 630,
         alt: "Inside React - Sanku's Blog",
@@ -43,7 +43,7 @@ export const metadata: Metadata = {
     card: "summary_large_image",
     title: "Inside React | Sanku's Blog",
     description: "Deep dives into React internals, Fiber architecture, and modern web development",
-    images: ["/og-image.png"],
+    images: ["/twitter-image"],
     creator: "@user_sankalpa",
   },
 };

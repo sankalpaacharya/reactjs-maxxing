@@ -31,7 +31,9 @@ export async function generateMetadata({
   const title = `${post.frontmatter.title} | Inside React`;
   const description = post.frontmatter.description;
   const url = `https://inside-react.vercel.app/blog/${slug}`;
-  const ogImage = post.frontmatter.ogImage;
+  const defaultOgImage = "/opengraph-image";
+  const defaultTwitterImage = "/twitter-image";
+  const ogImage = post.frontmatter.ogImage ?? defaultOgImage;
 
   return {
     title,
@@ -45,14 +47,14 @@ export async function generateMetadata({
       publishedTime: post.frontmatter.date,
       authors: ["Sankalpa Acharya"],
       tags: [post.frontmatter.topic],
-      ...(ogImage && { images: [ogImage] }),
+      images: [ogImage],
     },
     twitter: {
       card: "summary_large_image",
       title: post.frontmatter.title,
       description,
       creator: "@user_sankalpa",
-      ...(ogImage && { images: [ogImage] }),
+      images: [post.frontmatter.ogImage ?? defaultTwitterImage],
     },
     alternates: {
       canonical: url,
