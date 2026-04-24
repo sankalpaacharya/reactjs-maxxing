@@ -26,7 +26,7 @@ Suspense and Server Components. This blog focuses on how React handles streaming
 internally and what makes out-of-order streaming different from regular streaming.
 </IntendedAudience>
 
-## Tradtional SSR
+## Traditional SSR 
 
 Take this as an example:
 
@@ -48,7 +48,35 @@ async function ProductPage() {
 }
 ```
 
-Here even though `Footer` and `Navbar` have nothing to do with data fetching, they are still blocked. The whole page waits for `getRecommendations()` to finish before anything is sent.
+<img src="/blog/oos/waterfall.svg" alt="React UI Runtime"  style={{ display: 'block', margin: '2rem auto' }} />
+
+you might say _Sanku, you're just creating a waterfall here. fetch them in parallel._
+
+Fair let's do that
+
+```tsx
+async function ProductPage() {
+  const product = getProduct(); // 50ms
+  const recommendations = getRecommendations(); // 800ms
+  const reviews = getReviews(); // 300ms
+
+  return (
+    <>
+      <Navbar />
+      <ProductDetails product={product} />
+      <Reviews reviews={reviews} />
+      <Recommendations recommendations={recommendations} />
+      <Footer />
+    </>
+  );
+}
+```
+
+<img src="/blog/oos/parallel.svg" alt="React UI Runtime"  width={400} style={{display:"block", margin:"auto"}} />
+now all three fire at the same time._YAY_....but we still have a problem.
+
+The page waits for all three to finish before it sends a single byte of HTML. Here even though `Footer` and `Navbar` have nothing to do with data fetching, they are still blocked. The whole page waits for `getRecommendations()` to finish before anything is sent.
+
 
 It would be really nice if we could let the user see components that don't need data right away.
 
@@ -78,7 +106,46 @@ That's out-of-order streaming. There is no specific order. Components arrive whe
 
 React 19 introduced React Server Components and a new `Suspense` that makes this possible. You wrap your slow components in `<Suspense>` with a fallback UI, and React handles the rest.
 
+```tsx
+async function ProductDetails() {
+  await delay(50);
+  return <section>ProductDetails</section>;
+}
+
+async function Reviews() {
+  await delay(800);
+  return <section>Reviews</section>;
+}
+
+async function Recommendations() {
+  await delay(300);
+  return <section>Recommendations</section>;
+}
+
+export default function Page() {
+  return (
+    <main>
+      <Navbar />
+      <Suspense fallback={<div>loading...</div>}>
+        <ProductDetails />
+      </Suspense>
+      <Suspense fallback={<div>loading...</div>}>
+        <Reviews />
+      </Suspense>
+      <Suspense fallback={<div>loading...</div>}>
+        <Recommendations />
+      </Suspense>
+      <Footer />
+    </main>
+  );
+}
+```
+
 <img src="/blog/oos/outoforder.gif" alt="React UI Runtime"  style={{ display: 'block', margin: '2rem auto' }} />
+
+<InfoNote>
+I have increased the delay timings(1s, 2s, 3s) on the demo gif so that it's easier for you to follow along
+</InfoNote>
 
 Pretty cool right? Now let's dig into how React actually pulls this off.
 
