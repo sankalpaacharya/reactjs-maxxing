@@ -104,7 +104,7 @@ what if we could send `Navbar` and `Footer` immediately, drop a placeholder(mark
 
 That's out-of-order streaming. There is no specific order. Components arrive whenever their data is ready.
 
-React 19 introduced React Server Components and a new `Suspense` that makes this possible. You wrap your slow components in `<Suspense>` with a fallback UI, and React handles the rest.
+React 18 introduced `renderToPipeableStream` which made this possible. React 19 stabilized React Server Components, making it way more ergonomic to use. You wrap your slow components in `<Suspense>` with a fallback UI, and React handles the rest.
 
 ```tsx
 async function ProductDetails() {
