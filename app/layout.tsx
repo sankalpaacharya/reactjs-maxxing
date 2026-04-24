@@ -21,7 +21,8 @@ export const metadata: Metadata = {
     },
   },
   title: "Inside React | Sanku's Blog",
-  description: "Deep dives into React internals, Fiber architecture, and modern web development",
+  description:
+    "Deep dives into React internals, Fiber architecture, and modern web development",
   generator: "v0.app",
   openGraph: {
     type: "website",
@@ -29,7 +30,8 @@ export const metadata: Metadata = {
     url: "https://inside-react.vercel.app",
     siteName: "Inside React",
     title: "Inside React | Sanku's Blog",
-    description: "Deep dives into React internals, Fiber architecture, and modern web development",
+    description:
+      "Deep dives into React internals, Fiber architecture, and modern web development",
     images: [
       {
         url: "/opengraph-image",
@@ -42,7 +44,8 @@ export const metadata: Metadata = {
   twitter: {
     card: "summary_large_image",
     title: "Inside React | Sanku's Blog",
-    description: "Deep dives into React internals, Fiber architecture, and modern web development",
+    description:
+      "Deep dives into React internals, Fiber architecture, and modern web development",
     images: ["/twitter-image"],
     creator: "@user_sankalpa",
   },
