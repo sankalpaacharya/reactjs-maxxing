@@ -4,6 +4,7 @@ import { useEffect, useState } from "react";
 import { HugeiconsIcon } from "@hugeicons/react";
 import { LibraryIcon } from "@hugeicons/core-free-icons";
 import { cn } from "@/lib/utils";
+import { JobCard } from "@/app/test/page";
 
 interface TOCItem {
   id: string;
@@ -137,6 +138,9 @@ export function TableOfContents() {
             </span>
           )}
         </a>
+        <div className="mt-10">
+          <JobCard />
+        </div>
       </div>
     </aside>
   );
