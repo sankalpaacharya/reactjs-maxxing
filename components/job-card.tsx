@@ -69,7 +69,7 @@ export function JobCard() {
         </div>
 
         <div className="w-full flex flex-col gap-2 pt-1">
-          <a href="mailto:sankalpaacharya01@gmail.com?subject=Opportunity&body=Hi Sankalpa, I came across your work and...">
+          <a href="mailto:sankalpaacharya01@gmail.com?subject=Opportunity&body=Hi sanku, I came across your work and...">
             <Button
               size="sm"
               variant={"outline"}
