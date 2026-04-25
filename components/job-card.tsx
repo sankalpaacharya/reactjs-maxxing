@@ -25,7 +25,11 @@ export function JobCard() {
 
   const handleClose = () => {
     setIsVisible(false);
-    sessionStorage.setItem("hide-job-card", "true");
+
+    const oneHour = 60 * 60 * 1000;
+    const expiryTime = Date.now() + oneHour;
+
+    sessionStorage.setItem("hide-job-card", expiryTime.toString());
   };
 
   if (!mounted || !isVisible) return null;
