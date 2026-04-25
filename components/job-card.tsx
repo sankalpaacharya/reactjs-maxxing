@@ -69,7 +69,7 @@ export function JobCard() {
         </div>
 
         <div className="w-full flex flex-col gap-2 pt-1">
-          <Link href={"/hire-me"}>
+          <a href="mailto:sankalpaacharya01@gmail.com?subject=Opportunity&body=Hi Sankalpa, I came across your work and...">
             <Button
               size="sm"
               variant={"outline"}
@@ -77,10 +77,9 @@ export function JobCard() {
               onMouseLeave={() => setActive("stare")}
               className="w-full text-[11px] h-8 font-medium border-primary/20 hover:bg-primary/5 hover:text-primary transition-colors"
             >
-              View My Work
+              Contact me
             </Button>
-          </Link>
-
+          </a>
           <button
             onMouseEnter={() => setActive("okay")}
             onMouseLeave={() => setActive("stare")}
