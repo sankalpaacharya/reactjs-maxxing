@@ -4,7 +4,7 @@ import { useEffect, useState } from "react";
 import { HugeiconsIcon } from "@hugeicons/react";
 import { LibraryIcon } from "@hugeicons/core-free-icons";
 import { cn } from "@/lib/utils";
-import { JobCard } from "@/app/test/page";
+import { JobCard } from "../job-card";
 
 interface TOCItem {
   id: string;
