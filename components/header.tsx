@@ -89,7 +89,7 @@ export function Header() {
             </a>
           ))}
           <a
-            href="/hire-me"
+            href="https://hireme.sankalpa.info.np"
             className="px-4 py-1.5 rounded-lg bg-primary hover:bg-primary/90 text-primary-foreground font-medium text-sm transition-colors flex items-center gap-2"
           >
             Hire me
