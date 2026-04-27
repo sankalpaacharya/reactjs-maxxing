@@ -296,9 +296,10 @@ If the template is found, it marks the suspense boundary as queued by changing `
 ```tsx
 a.previousSibling.data = "$~"
 $RB.push(a, b)
+
 ```
 
-Once there are 2 items in the queue it schedules the actual swap using `requestAnimationFrame`. It doesn't swap immediately, it batches. This is intentional, if multiple components resolve around the same time React can group all the DOM operations into a single frame instead of thrashing the DOM one swap at a time.
+Once `$RC` has a complete pair, the template and the resolved component, it calls `$RV` using `requestAnimationFrame` to do the actual DOM swap.
 
 # $RB
 
@@ -380,10 +381,15 @@ i intentionally added a `<template id="B:0">` inside a random div. React doesn't
 so instead of swapping the actual ProductDetails placeholder, it swaps your random div.
 
 
+
+
 <img src="/blog/oos/breaking.gif" alt="React UI Runtime"  style={{ display: 'block', margin: '2rem auto' }} />
 
 # Putting it all together
 
 This is what makes React's streaming different from just chunking HTML. A regular HTML stream is forced to be in order because HTML parsing is sequential. React works around this by using the DOM as a staging area, sending components as hidden divs, and using JavaScript to place them in the right spot at the right time.
 
+
 I hope you enjoyed reading the blog ❤️
+
+Special thanks to [@render](https://x.com/infinterenders/) for catching few things I missed.
