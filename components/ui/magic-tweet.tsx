@@ -275,17 +275,17 @@ export const MagicTweet = ({
     likes?: number
     bookmarks?: number
 }) => {
-    if (!tweet) {
-        return (
-            <div className="flex h-fit w-full max-w-lg items-center justify-center rounded-xl border p-10">
-                <p className="text-muted-foreground">Tweet not available</p>
-            </div>
-        )
-    }
-    
-    const enrichedTweet = enrichTweet(tweet)
     const contentRef = useRef<HTMLDivElement>(null)
     const [isOverflowing, setIsOverflowing] = useState(false)
+
+    let enrichedTweet: EnrichedTweet | null = null
+    if (tweet) {
+        try {
+            enrichedTweet = enrichTweet(tweet)
+        } catch (err) {
+            console.error("Failed to enrich tweet:", err)
+        }
+    }
 
     useEffect(() => {
         if (!contentRef.current) return
@@ -311,6 +311,14 @@ export const MagicTweet = ({
             clearTimeout(timer)
         }
     }, [tweet])
+
+    if (!enrichedTweet) {
+        return (
+            <div className="flex h-fit w-full max-w-lg items-center justify-center rounded-xl border p-10">
+                <p className="text-muted-foreground">Tweet not available</p>
+            </div>
+        )
+    }
 
     return (
         <div
