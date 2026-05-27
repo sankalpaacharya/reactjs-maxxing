@@ -283,7 +283,24 @@ export const MagicTweet = ({
         try {
             enrichedTweet = enrichTweet(tweet)
         } catch (err) {
-            console.error("Failed to enrich tweet:", err)
+            console.error("Failed to enrich tweet, falling back to raw data:", err)
+            const screenName = tweet.user?.screen_name ?? ""
+            const userUrl = `https://twitter.com/${screenName}`
+            enrichedTweet = {
+                ...tweet,
+                url: `https://twitter.com/${screenName}/status/${tweet.id_str}`,
+                user: {
+                    ...tweet.user,
+                    url: userUrl,
+                    follow_url: userUrl,
+                },
+                like_url: `https://twitter.com/intent/like?tweet_id=${tweet.id_str}`,
+                reply_url: `https://twitter.com/intent/tweet?in_reply_to=${tweet.id_str}`,
+                entities: [{ type: "text", text: tweet.text }],
+                video: undefined,
+                photos: undefined,
+                in_reply_to_url: undefined,
+            } as unknown as EnrichedTweet
         }
     }
 
