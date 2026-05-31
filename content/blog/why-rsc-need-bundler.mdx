@@ -1,0 +1,71 @@
+---
+title: "Why rsc need a bundler"
+description: "A deep dive into how React state updates really work, from hooks to batching"
+date: "2026-02-24"
+topic: "React"
+draft: true
+---
+
+
+# Intro 
+I have been trying to build a react server component from a scratch for a learning and it's been a fun quite not gonna lie. 
+In this blog i wanna share with you all my learning, why RSC integrates with a bundler and how different is React server component 
+from the CSR app we build or the spa app we build 
+
+this blog is not going to be about why we need a RSC or benefite of RSC rather it will be on a internal implementation detail, 
+if you are nerdy about these things then buckle up we are going to see through those in this blog
+
+
+
+# Little History
+
+Before we move to a react server component let's have a quick recap, For many years react has always been on 
+the client side only, if you needed a data from the database you would have to wait till the browser downloads all the JavaScript, 
+parse it compile it and react renders all components commit them and after that the fetch call will begin. This way SEO suffers, 
+user will just have to stare at the blank screen while all these things is being processed 
+
+considering a same problem react team during 2021 introduced a New Suspense SSR Architecture in React 18, RSC was still in experimental
+phase that time, but i guess react team prepared the new suspense SSR Architecture considering the RSC they were working that time. 
+tho the initial RSC accountment was already done during the 2020 ie [Introducing Zero-Bundle-Size React Server Components](https://react.dev/blog/2020/12/21/data-fetching-with-react-server-components)
+
+
+# Interesting parts
+
+react server component introduced a new protocl called a flight protocol which genereates a flight stream which looks something 
+
+React server component needs a tight integreation with the bundler, In a RSC paradigm we can have a both client and a server components
+
+RSC gives a ability to generate a UI on server side and send that built UI on the client side as a flight protocl and none 
+of the JavaScript for this component needs to be shipped to a browser, since RSC sends a serialized flight stream not a HTML, client 
+side state are also preserved as well.
+https://overreacted.io/jsx-over-the-wire/#composing-viewmodels
+
+This can be pretty much confusing to a lot of people, is RSC is just a new SSR but that's actually not the truth cause 
+when you are doing SSR you are sending a rendered HTML to a client side and after that react on the client side takes a full control 
+you can't just ask few portion of your UI to get revalidated in SSR, you would need a full page re-fresh on that.
+
+so what actually mean in RSC is that a new version of a server subtree is streamed to the client and reconciled into the existing React tree
+
+React server component paradigm we can have a client component and a server component both, 
+
+like this 
+
+[why cleint component need ssrd](https://github.com/reactwg/server-components/discussions/4)
+
+# Let's begin 
+
+React UI is a tree in itself, this UI tree has leaves 🍃 in this tree, some leaves is for browser(client components) and some leaves
+is for the server(server component). 
+
+when we are building RSC app we build app from two prespective from a client world and from a server world. 
+
+when it's a client build it's it goes from your entry file and your module graph, it travers your module graph and when it 
+encounters a servre component it will execute 
+
+
+
+
+
+
+
+
