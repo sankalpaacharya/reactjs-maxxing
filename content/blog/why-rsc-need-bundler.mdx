@@ -47,7 +47,7 @@ async function Page() {
     <div>
       <h1>Dashboard</h1>
       <p>{user.name}</p>
-      <AddToCart />
+      <Counter />
     </div>
   )
 }
@@ -56,7 +56,7 @@ async function Page() {
 Now during a runtime RSC renderer will generate a flight stream for this which would look something like this 
 
 ```json 
-1:["$","div",null,{
+0:["$","div",null,{
   "children":[
     ["$","h1",null,{
       "children":"Dashboard"
@@ -69,6 +69,7 @@ Now during a runtime RSC renderer will generate a flight stream for this which w
     ["$","$L1",null,{}]
   ]
 }]
+1:I["./Counter.js",["client"],"default"]
 ```
 
 On the client side, this stream is reconstructed back into a React tree. This is what allows React Server Components to send UI from the server without shipping the implementation code for server components to the browser. 
@@ -77,7 +78,7 @@ Because you are sending a rendered UI as a flight stream which will be construct
 while client components are resolved later using the referenced modules.
 
 ```json 
-1:["$","div",null,{
+0:["$","div",null,{
   "children":[
     ["$","h1",null,{
       "children":"Counter"
@@ -86,27 +87,144 @@ while client components are resolved later using the referenced modules.
     ["$","$L1",null,{}]
   ]
 }]
+1:I["./Counter.js",["client"],"default"]
 ```
 
 
 This can be pretty much confusing to a lot of people, is RSC is just a new SSR but that's actually not the truth cause 
-when you are doing SSR you are sending a rendered HTML to a client side and after that react on the client side takes a full control 
-you can't just ask few portion of your UI to get revalidated in SSR, you would need a full page re-fresh on that.
+when you are doing SSR you are sending a rendered HTML to a client side and after that react on the client side takes a full control, 
+but the browser still has to download the JS for every one of those components to hydrate them. with RSC the server component code never ships to the client at all, the server just sends the rendered UI as a stream.
+
+Don't worry if this don't make sense we will look into detail below
 
 # Let's begin 
 
-A React UI is a tree. Some parts of this tree run on the server, and some parts run in the browser.
+A React UI is a tree. Some branch of this tree run on the server, and some branch run in the browser.
+
+<img src="/blog/rsc-bundler/react-tree.svg" alt="React UI Runtime" width="400" height="100" style={{ display: 'block', margin: '2rem auto' }} />
 
 In a React Server Components setup, we are no longer dealing with a single build target. Instead, the same codebase is processed from two perspectives: a server world and a client world.
 
-On the server side, the application is executed starting from the entry file. React walks through the module graph and renders all Server Components. These components run in a Node.js environment using the server renderer from react-server-dom, which does not include browser APIs like useState or event handlers.
 
-Instead of rendering the component, the server emits something like a module reference using registerClientReference. This reference does not contain implementation details. It only points to where the component exists in the client bundle.
+## Conditional Exports
+One interesting part here is that React does not expose the exact same implementation to both environments. When we build an RSC app, we are effectively building for two different runtimes.
 
+Take this as an example
+
+```tsx 
+async function Page() {
+  const user = await db.user.findFirst();
+
+  return (
+    <div>
+      <h1>Dashboard</h1>
+      <p>{user.name}</p>
+      <Counter />
+    </div>
+  );
+}
+```
+During the server build, the bundler starts from the entry file and traverses through the import graph. But server components and client components are not built against the exact same React runtime.
+
+For server components, React uses a server-oriented environment through conditional exports. This version is designed for server rendering and does not support client-only features like hooks. Client components, on the other hand, are built against the normal client React runtime where hooks are supported
+
+
+## Server Build 
+
+During the server build, the bundler starts from the entry file and begins traversing through the import graph.
+
+Take the same example code above 
+
+When the server build reaches `Page`, there is nothing unusual yet. `Page` is a server component, so the bundler can include it in the server bundle normally. But what do we do when we encounter the `<Counter/>` ?
+
+```tsx 
+"use client";
+
+import { useState } from "react";
+
+export default function Counter() {
+  const [count, setCount] = useState(0);
+
+  return (
+    <button onClick={() => setCount((c) => c + 1)}>
+      {count}
+    </button>
+  );
+}
+```
+Remember, the server build is using the server-side React environment. This environment is meant for server rendering and does not support client-side interactivity like useState, event handlers, or browser APIs.
+
+So at this point, the server build cannot just bundle and execute Counter as a normal server component. Counter belongs to the client runtime. It uses state, browser interactions, and code that is expected to run in the browser.
+
+Instead of keeping the real implementation, the bundler swaps the Client Component module with a stub.
 
 ```tsx
+import { registerClientReference } from "react-server-dom-webpack/server";
+```
+Usually, this is done using a loader in the bundler.
+
+```tsx 
+export default function useClientLoader(source) {
+  const trimmed = source.trimStart();
+  const isClient =
+    trimmed.startsWith("'use client'") || trimmed.startsWith('"use client"');
+  if (!isClient) return source;
+  const id = path.relative(this.rootContext, this.resourcePath);
+  const exports = collectExports(source);
   let out = `import { registerClientReference } from "react-server-dom-webpack/server";\n`;
+
+  for (const name of exports) {
+    const ref = `registerClientReference(() => { throw new Error("client only"); }, "${id}", "${name}")`;
+    out += name === "default"
+      ? `export default ${ref};\n`
+      : `export const ${name} = ${ref};\n`;
+  }
+  return out; // return stub function for client component
+}
+```
+
+What matters is that the server build no longer sees the real Counter component code. Instead, it sees a placeholder. Something that basically says _this component lives in the client world, I cannot execute it here, but I know its identity_
+
+When the server renderer generates the Flight stream, React does not try to render Counter rather it emits a reference instead
+
+## Client Build 
+
+Now on the client side, the bundler does another pass, but this time it is building for the browser runtime. This is the part where the actual implementation of client components is included in the bundle.
+
+So when it sees something like:
+
+```tsx
+"use client";
+
+import { useState } from "react";
+
+export default function Counter() {
+  const [count, setCount] = useState(0);
+
+  return (
+    <button onClick={() => setCount((c) => c + 1)}>
+      {count}
+    </button>
+  );
+}
+```
+
+this time it is not treated as something to replace or stub. Instead, it is compiled normally against the client React runtime, where hooks and browser APIs exist. So Counter becomes part of the client bundle like any other React component we are used to in SPA apps.
+
+At the same time, the bundler also generates a manifest that connects server references to these actual client modules.
+
+Something like:
+
+```tsx
+{
+  "./Counter.js": {
+    "id": "./components/Counter.js",
+    "name": "default",
+    "chunks": ["client"]
+  }
+}
 ```
 
 
-
+## Conclusion
+Thanks for reading the blog ❤️
