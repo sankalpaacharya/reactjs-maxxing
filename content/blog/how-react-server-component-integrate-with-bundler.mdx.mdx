@@ -1,7 +1,7 @@
 ---
-title: "How React Server Component Integrates with Bundler"
-description: "A deep dive into how React state updates really work, from hooks to batching"
-date: "2026-02-24"
+title: "How React Server Component Integrate with Bundler"
+description: "how an RSC app gets split between server and client at build time"
+date: "2026-06-2"
 topic: "React"
 draft: true
 ---
@@ -101,12 +101,15 @@ Don't worry if this don't make sense we will look into detail below
 
 A React UI is a tree. Some branch of this tree run on the server, and some branch run in the browser.
 
-<img src="/blog/rsc-bundler/react-tree.svg" alt="React UI Runtime" width="400" height="100" style={{ display: 'block', margin: '2rem auto' }} />
+<img src="/blog/rsc-bundler/react-tree.svg" alt="React UI Runtime" style={{ display: 'block', margin: '2rem auto' }} />
 
 In a React Server Components setup, we are no longer dealing with a single build target. Instead, the same codebase is processed from two perspectives: a server world and a client world.
 
 
-## Conditional Exports
+# Conditional Exports
+
+<img src="/blog/rsc-bundler/client-server.svg" alt="client server"  style={{ display: 'block', margin: '2rem auto' }} />
+
 One interesting part here is that React does not expose the exact same implementation to both environments. When we build an RSC app, we are effectively building for two different runtimes.
 
 Take this as an example
@@ -129,7 +132,7 @@ During the server build, the bundler starts from the entry file and traverses th
 For server components, React uses a server-oriented environment through conditional exports. This version is designed for server rendering and does not support client-only features like hooks. Client components, on the other hand, are built against the normal client React runtime where hooks are supported
 
 
-## Server Build 
+# Server Build 
 
 During the server build, the bundler starts from the entry file and begins traversing through the import graph.
 
@@ -187,7 +190,7 @@ What matters is that the server build no longer sees the real Counter component 
 
 When the server renderer generates the Flight stream, React does not try to render Counter rather it emits a reference instead
 
-## Client Build 
+# Client Build 
 
 Now on the client side, the bundler does another pass, but this time it is building for the browser runtime. This is the part where the actual implementation of client components is included in the bundle.
 
