@@ -1,44 +1,41 @@
 ---
 title: "How React Server Components Integrate with Bundler"
 description: "how an RSC app gets split between server and client at build time"
-date: "2026-06-2"
+date: "2026-06-05"
 topic: "React"
-draft: true
+draft: false
 ---
 
 
-# Intro 
+# Intro
 
 I have been experimenting with building a [small version](https://github.com/sankalpaacharya/drop) of React Server Components to understand how the system works internally.
 
-This blog is not about why RSC is useful or what benefits it brings. It’s more focused on how it actually works under the hood, 
-especially how the server and client parts of a React app end up split during build time.
+This blog is not about why RSC is useful or what benefits it brings. It's more focused on how it actually works under the hood, especially how the server and client parts of a React app end up split during build time.
 
 
-# Interesting parts
+# Interesting Parts
 
-React server component has a protocl called a flight protocol which genereates a flight stream. This is not real JSON, but it looks similar in structure. It is closer to a structured wire format that React can parse incrementally while streaming.
+React Server Components have a protocol called the Flight protocol, which generates a Flight stream. This is not real JSON, but it looks similar in structure. It is closer to a structured wire format that React can parse incrementally while streaming.
 
 One reason this format is not plain JSON is that React needs to support values that JSON normally cannot represent cleanly during serialization, such as async boundaries and server-side computations that may resolve over time.
 
-```tsx 
-
+```tsx
 const promise = new Promise((resolve) => {
   setTimeout(() => resolve("Sanku"), 1000);
 });
 
 const json = JSON.stringify(promise); // => '{}'
-
 ```
 
- Instead of trying to force everything into JSON semantics, React uses a custom format that can represent these cases in a streaming way.
+Instead of trying to force everything into JSON semantics, React uses a custom format that can represent these cases in a streaming way.
 
 - [You can serialize a promise in React](https://twofoldframework.com/blog/you-can-serialize-a-promise-in-react)
 
 
-Take this as an example
+Take this as an example:
 
-```tsx 
+```tsx
 // Server-Component.tsx
 async function Page() {
   const user = await db.user.findFirst()
@@ -53,9 +50,9 @@ async function Page() {
 }
 ```
 
-Now during a runtime RSC renderer will generate a flight stream for this which would look something like this 
+During runtime, the RSC renderer will generate a Flight stream for this, which would look something like this:
 
-```json 
+```json
 0:["$","div",null,{
   "children":[
     ["$","h1",null,{
@@ -63,7 +60,7 @@ Now during a runtime RSC renderer will generate a flight stream for this which w
     }],
 
     ["$","p",null,{
-      "children":"Sanku"   // from DB result
+      "children":"Sanku"
     }],
 
     ["$","$L1",null,{}]
@@ -72,32 +69,13 @@ Now during a runtime RSC renderer will generate a flight stream for this which w
 1:I["./Counter.js",["client"],"default"]
 ```
 
-On the client side, this stream is reconstructed back into a React tree. This is what allows React Server Components to send UI from the server without shipping the implementation code for server components to the 
-The server sends the server components as finished, rendered elements but client components aren't rendered into the stream they're sent as a reference `($L1)` that the browser fills in.
-while client components are resolved later using the referenced modules.
+On the client side, this stream is reconstructed back into a React tree. The server sends server components as finished, rendered elements, but client components are sent as a reference (`$L1`) that the browser fills in later using the referenced modules.
 
-```json 
-0:["$","div",null,{
-  "children":[
-    ["$","h1",null,{
-      "children":"Counter"
-    }],
+Don't worry if this doesn't make sense yet, we will look into it in more detail below.
 
-    ["$","$L1",null,{}]
-  ]
-}]
-1:I["./Counter.js",["client"],"default"]
-```
+# Let's Begin
 
-
-This can be pretty much confusing to a lot of people, is RSC is just a new SSR but that's actually not the truth cause 
-when you are doing SSR you are sending a rendered HTML to a client side and after that react on the client side takes a full control, 
-but the browser still has to download the JS for every one of those components to hydrate them. with RSC the server component code never ships to the client at all, the server sends its already-reduced output as a stream, and client components ride along as references rather than as rendered markup.
-Don't worry if this don't make sense we will look into detail below
-
-# Let's begin 
-
-A React UI is a tree. Some branch of this tree run on the server, and some branch run in the browser.
+A React UI is a tree. Some branches of this tree run on the server, and some branches run in the browser.
 
 <img src="/blog/rsc-bundler/react-tree.svg" alt="React UI Runtime" style={{ display: 'block', margin: '2rem auto' }} />
 
@@ -106,13 +84,13 @@ In a React Server Components setup, we are no longer dealing with a single build
 
 # Conditional Exports
 
-<img src="/blog/rsc-bundler/client-server.svg" alt="client server"  style={{ display: 'block', margin: '2rem auto' }} />
+<img src="/blog/rsc-bundler/client-server.svg" alt="client server" style={{ display: 'block', margin: '2rem auto' }} />
 
-One interesting part here is that React does not expose the exact same implementation to both environments. When we build an RSC app, we are effectively building for two different runtimes.
+One interesting thing here is that React does not expose the exact same implementation to both environments. When we build an RSC app, we are effectively building for two different runtimes.
 
-Take this as an example
+example code:
 
-```tsx 
+```tsx
 async function Page() {
   const user = await db.user.findFirst();
 
@@ -125,20 +103,19 @@ async function Page() {
   );
 }
 ```
-During the server build, the bundler starts from the entry file and traverses through the import graph. But server components and client components are not built against the exact same React runtime.
 
-For server components, React uses a server-oriented environment through conditional exports. This version is designed for server rendering and does not support client-only features like hooks. Client components, on the other hand, are built against the normal client React runtime where hooks are supported
+Server components and client components are not built against the exact same React runtime. For server components, React resolves packages under the `react-server` export condition. When webpack sees this condition, it picks up a completely different entry point inside the React package, one that is designed for server rendering and does not support client-only features like hooks. This is also where `react-server-dom-webpack` comes in. It is the package that wires up the Flight protocol to webpack, exposing things like `renderToPipeableStream` on the server side and `createFromFetch` on the client side. Client components are built against the normal client React runtime where hooks are supported.
 
 
-# Server Build 
+# Server Build
 
-During the server build, the bundler starts from the entry file and begins traversing through the import graph.
 
-Take the same example code above 
 
-When the server build reaches `Page`, there is nothing unusual yet. `Page` is a server component, so the bundler can include it in the server bundle normally. But what do we do when we encounter the `<Counter/>` ?
+Take the same example code above.
 
-```tsx 
+When the server build reaches `Page`, there is nothing unusual yet. `Page` is a server component, so the bundler can include it in the server bundle normally. But what happens when we encounter `<Counter />`?
+
+```tsx
 "use client";
 
 import { useState } from "react";
@@ -153,18 +130,18 @@ export default function Counter() {
   );
 }
 ```
-Remember, the server build is using the server-side React environment. This environment is meant for server rendering and does not support client-side interactivity like useState, event handlers, or browser APIs.
 
-So at this point, the server build cannot just bundle and execute Counter as a normal server component. Counter belongs to the client runtime. It uses state, browser interactions, and code that is expected to run in the browser.
+Remember, the server build is running under the `react-server` condition. It does not support `useState`, event handlers, or browser APIs. So it cannot just bundle and execute `Counter` like a normal component.
 
-Instead of keeping the real implementation, the bundler swaps the Client Component module with a stub.
+Instead of keeping the real implementation, the bundler swaps the client component module with a stub. This stub is built using `registerClientReference`, which comes from `react-server-dom-webpack/server`. That function does not render anything. It just registers the component's identity so the Flight renderer knows how to refer to it in the stream.
 
 ```tsx
 import { registerClientReference } from "react-server-dom-webpack/server";
 ```
-Usually, this is done using a loader in the bundler.
 
-```tsx 
+Usually, this is done using a loader in the bundler:
+
+```tsx
 export default function useClientLoader(source) {
   const trimmed = source.trimStart();
   const isClient =
@@ -184,11 +161,21 @@ export default function useClientLoader(source) {
 }
 ```
 
-What matters is that the server build no longer sees the real Counter component code. Instead, it sees a placeholder. Something that basically says _this component lives in the client world, I cannot execute it here, but I know its identity_
+What matters is that the server build no longer sees the real `Counter` component code. Instead, it sees something like this:
 
-When the server renderer generates the Flight stream, React does not try to render Counter rather it emits a reference instead
+```tsx
+import { registerClientReference } from "react-server-dom-webpack/server";
 
-# Client Build 
+export default registerClientReference(
+  () => { throw new Error("client only"); },
+  "./components/Counter.js",
+  "default"
+);
+```
+
+When the server renderer generates the Flight stream, React does not try to render `Counter`. Instead, it emits a reference.
+
+# Client Build
 
 Now on the client side, the bundler does another pass, but this time it is building for the browser runtime. This is the part where the actual implementation of client components is included in the bundle.
 
@@ -210,12 +197,11 @@ export default function Counter() {
 }
 ```
 
-this time it is not treated as something to replace or stub. Instead, it is compiled normally against the client React runtime, where hooks and browser APIs exist. So Counter becomes part of the client bundle like any other React component we are used to in SPA apps.
+This time it is not treated as something to replace or stub. Instead, it is compiled normally against the client React runtime, where hooks and browser APIs exist. So `Counter` becomes part of the client bundle like any other React component we are used to in SPA apps.
 
-At the same time, the bundler also generates a manifest that connects server references to these actual client modules.
-Something like:
+At the same time, the bundler also generates a manifest that connects server references to these actual client modules. Something like:
 
-```tsx
+```json
 {
   "./Counter.js": {
     "id": "./components/Counter.js",
@@ -224,19 +210,20 @@ Something like:
   }
 }
 ```
-and this is not really something the browser cares about directly. it is more like internal glue. because earlier, on the server side, React is not sending actual components, it is sending references. just _this is Counter_.
 
-So now this manifest is basically what turns a server reference into an actual file the browser can load. It tells React where the component lives and which chunk to fetch so it can be turned into real code.
+And this is not really something the browser cares about directly. It is more like internal glue that maps those `$L1` style references in the Flight stream to actual files.
 
-This is how RSC integrates with a bundler. but we are still missing one important piece here, SSR.
+So this manifest is basically what turns a server reference into an actual file the browser can load. It tells React where the component lives and which chunk to fetch so it can be turned into real code.
+
+This is how RSC integrates with a bundler. But we are still missing one important piece here: SSR.
 
 Because right now we are just taking an RSC payload and turning it into a UI, but we are not really talking about how that UI gets rendered in the first place during server-side rendering.
 
-let’s keep that for another blog ;)
+Let's keep that for another blog ;) (ssr and server actions)
 
 ## Conclusion
 
-This was the really fun learning for me, still looking forward to make more improvement on my project and keep sharing as I learn. Follow me on [twitter](https://x.com/sankalpa_02) I keep posting there about react, web and things I build.
+This was a really fun thing to learn. I'm still looking forward to making more improvements on my project and will keep sharing as I learn. Follow me on [Twitter](https://x.com/sankalpa_02) and I keep posting there about React, web stuff, and things I build.
 
 
 Thanks for reading the blog ❤️
