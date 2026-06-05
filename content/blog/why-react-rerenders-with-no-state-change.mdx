@@ -1,0 +1,210 @@
+---
+title: "Why React re-renders even with no state change"
+description: "Why your component re-renders when its own state and props never changed, and what actually triggers a render in React"
+date: "2026-06-01"
+topic: "React"
+draft: false
+---
+
+
+At some point every React developer adds a `console.log` inside a component, opens the devtools, and watches it fire
+again and again. The weird part? You never touched that component's state. You never changed its props. And yet, there it
+is, rendering again.
+
+So the obvious question, _why is this thing re-rendering when nothing about it changed?_
+
+Let's start with a small example.
+
+<Sandpack
+template="react"
+showConsole={true}
+files={{
+"/App.js": `import { useState } from "react";
+import "./styles.css";
+
+function Child() {
+  console.log("Child rendered");
+  return <div className="child">I have no state and no props</div>;
+}
+
+export default function App() {
+  const [count, setCount] = useState(0);
+
+  return (
+    <div className="container">
+      <span className="count">{count}</span>
+      <button className="btn" onClick={() => setCount(count + 1)}>
+        increment
+      </button>
+      <Child />
+    </div>
+  );
+}`,
+"/styles.css": `.container {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 16px;
+  padding: 32px 16px;
+}
+
+.count {
+  font-size: 2.5rem;
+  font-weight: 700;
+  font-family: monospace;
+  color: #1a1a2e;
+}
+
+.btn {
+  padding: 8px 20px;
+  font-size: 0.85rem;
+  font-weight: 500;
+  color: #fff;
+  background: #1a1a2e;
+  border: none;
+  border-radius: 8px;
+  cursor: pointer;
+}
+
+.btn:hover {
+  background: #16213e;
+}
+
+.child {
+  font-family: monospace;
+  font-size: 0.85rem;
+  color: #666;
+  padding: 12px 16px;
+  border: 1px dashed #ccc;
+  border-radius: 8px;
+}
+`
+}}
+/>
+
+Click `increment` a few times and watch the console. `Child rendered` shows up on every single click. But `Child`
+has no state. It has no props. Nothing about it changed. _So why does it keep rendering?_
+
+<IntendedAudience>
+This blog is for developers who already know React basics and are comfortable with state, props, and rendering lists.
+You should understand that a component is just a function that returns UI. We'll build a mental model for what actually
+triggers a render, so you stop guessing about why your components re-render.
+</IntendedAudience>
+
+# What "render" actually means
+
+First we need to clear up a word that confuses a lot of people. When we say a component "re-renders", most people
+picture the DOM being thrown away and rebuilt. That is not what happens.
+
+A render is just React calling your component function again.
+
+That's it. `Child()` gets called, it returns some JSX, and React now has a fresh description of what `Child` should look
+like. Whether anything actually changes in the real DOM is a completely separate step that happens later.
+
+So when we say `Child` "re-rendered", all we're saying is _React called the `Child` function again_. The DOM might not
+change at all.
+
+Keep these two phases separate in your head:
+
+- **Render phase** — React calls your component functions to figure out what the UI should look like.
+- **Commit phase** — React takes the result and applies the minimal changes to the actual DOM.
+
+The thing you keep seeing in your console, that's the render phase. And the render phase runs a lot more often than the
+commit phase touches the DOM.
+
+# What actually triggers a render
+
+A component re-renders for one of these reasons:
+
+- Its own state changed
+- Its parent re-rendered
+- A context it consumes changed
+- Its hook (like `useReducer`) dispatched an update
+
+Notice the second one. _Its parent re-rendered._ This is the one that catches everyone.
+
+In our example, when you click the button, `App`'s state changes, so `App` re-renders. And here's the rule that surprises
+people:
+
+> When a component re-renders, React re-renders **all of its children** by default.
+
+Not the children whose props changed. _All_ of them. React doesn't sit there comparing props to decide which children
+deserve a re-render. By default, if the parent runs again, every child function runs again too.
+
+`Child` re-rendered not because anything about `Child` changed, but because its parent `App` did. React walked down the
+tree and called every child function on the way.
+
+# But the DOM didn't change
+
+Here's the part that makes this okay. Even though `Child` rendered, the actual DOM for `Child` was never touched.
+
+When React calls `Child()` again, it gets a new description of the UI. Then it compares this new description against the
+previous one during reconciliation. The output of `Child` is identical to last time, so React looks at it and goes _nothing
+to do here_ and moves on. No DOM update.
+
+So the work that happened was:
+
+- React called `Child()` (cheap, just a function call)
+- React diffed the new output against the old (cheap)
+- React changed nothing in the DOM
+
+This is why re-renders are usually fine. A render is not free, but it's also not the expensive thing people imagine. The
+expensive part, touching the DOM, didn't happen.
+
+This is also why chasing every re-render is often a waste of time. React calling a function and throwing the result away is
+rarely your performance problem.
+
+# The reference trap
+
+Re-renders become an actual problem when you pass things down that look the same but aren't.
+
+```jsx
+function App() {
+  const [count, setCount] = useState(0);
+
+  const user = { name: "sanku" };
+  const handleClick = () => doSomething();
+
+  return <Child user={user} onClick={handleClick} />;
+}
+```
+
+Every time `App` re-renders, that `user` object and that `handleClick` function are created fresh. They look identical to
+your eyes, but in JavaScript:
+
+```jsx
+{ name: "sanku" } === { name: "sanku" } // false
+```
+
+They're brand new references every render. For a normal child this doesn't matter, it was going to re-render anyway because
+its parent did. But the moment you wrap `Child` in `React.memo` to try to skip re-renders, these fresh references quietly
+defeat it. `memo` does a shallow comparison of props, sees a new object and a new function every time, and re-renders
+anyway.
+
+This is the real reason `useMemo` and `useCallback` exist. Not to make rendering faster in general, but to keep the
+**reference** stable across renders so that a memoized child can actually skip its work.
+
+# So when should I care?
+
+Most re-renders are harmless. A component running again and producing the same output is something React handles thousands
+of times without you noticing.
+
+You should only care when:
+
+- A re-render does **expensive work** inside the render (heavy computation, large lists)
+- A child is wrapped in `memo` and you're accidentally breaking it with unstable props
+- You're triggering renders far more often than the data actually changes
+
+The fix is rarely "stop re-rendering". It's usually "move state down so fewer components sit under it", or "stabilize the
+references you pass to memoized children".
+
+# Conclusion
+
+So back to the original question, why does a component re-render when nothing about it changed? Because **rendering is not
+about the component, it's about its position in the tree**. When a parent re-renders, React re-runs its children, and that
+has nothing to do with whether their props changed.
+
+A re-render is just React calling your function again to ask _what should this look like now?_. Most of the time the answer
+is the same as before, React notices, and the DOM never moves.
+
+Thanks for reading ❤️

@@ -72,9 +72,8 @@ Now during a runtime RSC renderer will generate a flight stream for this which w
 1:I["./Counter.js",["client"],"default"]
 ```
 
-On the client side, this stream is reconstructed back into a React tree. This is what allows React Server Components to send UI from the server without shipping the implementation code for server components to the browser. 
-Because you are sending a rendered UI as a flight stream which will be constructued on client side.
-
+On the client side, this stream is reconstructed back into a React tree. This is what allows React Server Components to send UI from the server without shipping the implementation code for server components to the 
+The server sends the server components as finished, rendered elements but client components aren't rendered into the stream they're sent as a reference `($L1)` that the browser fills in.
 while client components are resolved later using the referenced modules.
 
 ```json 
@@ -93,8 +92,7 @@ while client components are resolved later using the referenced modules.
 
 This can be pretty much confusing to a lot of people, is RSC is just a new SSR but that's actually not the truth cause 
 when you are doing SSR you are sending a rendered HTML to a client side and after that react on the client side takes a full control, 
-but the browser still has to download the JS for every one of those components to hydrate them. with RSC the server component code never ships to the client at all, the server just sends the rendered UI as a stream.
-
+but the browser still has to download the JS for every one of those components to hydrate them. with RSC the server component code never ships to the client at all, the server sends its already-reduced output as a stream, and client components ride along as references rather than as rendered markup.
 Don't worry if this don't make sense we will look into detail below
 
 # Let's begin 
@@ -215,7 +213,6 @@ export default function Counter() {
 this time it is not treated as something to replace or stub. Instead, it is compiled normally against the client React runtime, where hooks and browser APIs exist. So Counter becomes part of the client bundle like any other React component we are used to in SPA apps.
 
 At the same time, the bundler also generates a manifest that connects server references to these actual client modules.
-
 Something like:
 
 ```tsx
@@ -227,7 +224,19 @@ Something like:
   }
 }
 ```
+and this is not really something the browser cares about directly. it is more like internal glue. because earlier, on the server side, React is not sending actual components, it is sending references. just _this is Counter_.
 
+So now this manifest is basically what turns a server reference into an actual file the browser can load. It tells React where the component lives and which chunk to fetch so it can be turned into real code.
+
+This is how RSC integrates with a bundler. but we are still missing one important piece here, SSR.
+
+Because right now we are just taking an RSC payload and turning it into a UI, but we are not really talking about how that UI gets rendered in the first place during server-side rendering.
+
+let’s keep that for another blog ;)
 
 ## Conclusion
+
+This was the really fun learning for me, still looking forward to make more improvement on my project and keep sharing as I learn. Follow me on [twitter](https://x.com/sankalpa_02) I keep posting there about react, web and things I build.
+
+
 Thanks for reading the blog ❤️
