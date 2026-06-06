@@ -10,6 +10,13 @@ export default function Page() {
   return (
     <main className="min-h-screen bg-background text-foreground">
       <div className="mx-auto max-w-7xl px-6 py-12 mt-10">
+        <div className="mb-8 rounded-2xl overflow-hidden">
+          <img
+            src="/Reactjs%20Maxxing.png"
+            alt="reactjs maxxing"
+            className="w-full h-56 object-cover sm:h-72 lg:h-80"
+          />
+        </div>
         <div className="grid gap-8 lg:grid-cols-[1fr_360px]">
           <section className="rounded-3xl border bg-card p-8 shadow-sm">
             <div className="mb-6 inline-flex rounded-full border px-3 py-1 text-sm text-muted-foreground">

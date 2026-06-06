@@ -71,8 +71,8 @@ export function Banner() {
   return (
     <div className="relative w-full h-48 md:h-64 overflow-hidden">
       <img
-        src="/image.png"
-        alt="Blog Banner"
+        src="/Reactjs%20Maxxing.png"
+        alt="reactjs maxxing banner"
         className="w-full h-full object-cover"
       />
       {/* Dark overlay */}
