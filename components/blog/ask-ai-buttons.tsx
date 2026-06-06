@@ -9,8 +9,8 @@ interface AskAIButtonsProps {
 }
 
 export function AskAIButtons({ slug, title }: AskAIButtonsProps) {
-  const blogUrl = `https://inside-react.vercel.app/blog/${slug}`;
-  
+  const blogUrl = `https://reactjs-maxxing.vercel.app/blog/${slug}`;
+
   const prompt = `I'm reading this blog post: "${title}" at ${blogUrl}
 Help me understand the concepts explained in this article. Be ready to explain concepts, give examples, or help debug based on it.`;
 

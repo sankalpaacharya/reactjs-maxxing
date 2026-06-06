@@ -206,7 +206,7 @@ export default async function Image({
                 fontSize: 16,
               }}
             >
-              inside-react.vercel.app
+              reactjs-maxxing.vercel.app
             </span>
           </div>
         </div>

@@ -2,7 +2,7 @@
 
 import { useEffect, useState } from "react";
 
-const STORAGE_KEY = "inside-react:sneak-emoji-v1";
+const STORAGE_KEY = "reactjs-maxxing:sneak-emoji-v1";
 const COOLDOWN_MS = 1000 * 60 * 60 * 24 * 4;
 const SHOW_DELAY_MS = 1200;
 const MESSAGE =

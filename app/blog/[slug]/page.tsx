@@ -28,11 +28,11 @@ export async function generateMetadata({
   const post = getPostFrontmatter(slug);
   if (!post) return {};
 
-  const title = `${post.frontmatter.title} | Inside React`;
+  const title = `${post.frontmatter.title} | reactjs maxxing`;
   const description = post.frontmatter.description;
-  const url = `https://inside-react.vercel.app/blog/${slug}`;
-  const metadataBase = new URL("https://inside-react.vercel.app");
-  const defaultOgImage = "/opengraph-image";
+  const url = `https://reactjs-maxxing.vercel.app/blog/${slug}`;
+  const metadataBase = new URL("https://reactjs-maxxing.vercel.app");
+  const defaultOgImage = "/Reactjs%20Maxxing.png";
   const defaultTwitterImage = "/twitter-image";
   const ogImage = post.frontmatter.ogImage ?? defaultOgImage;
   const ogImageUrl = new URL(ogImage, metadataBase).toString();
@@ -58,7 +58,7 @@ export async function generateMetadata({
       title: post.frontmatter.title,
       description,
       url,
-      siteName: "Inside React",
+      siteName: "reactjs maxxing",
       type: "article",
       publishedTime: post.frontmatter.date,
       authors: ["Sankalpa Acharya"],

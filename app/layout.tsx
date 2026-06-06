@@ -14,30 +14,30 @@ const poppins = Poppins({
 });
 
 export const metadata: Metadata = {
-  metadataBase: new URL("https://inside-react.vercel.app"),
+  metadataBase: new URL("https://reactjs-maxxing.vercel.app"),
   alternates: {
     types: {
-      "application/rss+xml": "https://inside-react.vercel.app/rss.xml",
+      "application/rss+xml": "https://reactjs-maxxing.vercel.app/rss.xml",
     },
   },
-  title: "Inside React | Sanku's Blog",
+  title: "reactjs maxxing | Sanku's Blog",
   description:
     "Deep dives into React internals, Fiber architecture, and modern web development",
   generator: "v0.app",
   openGraph: {
     type: "website",
     locale: "en_US",
-    url: "https://inside-react.vercel.app",
-    siteName: "Inside React",
-    title: "Inside React | Sanku's Blog",
+    url: "https://reactjs-maxxing.vercel.app",
+    siteName: "reactjs maxxing",
+    title: "reactjs maxxing | Sanku's Blog",
     description:
       "Deep dives into React internals, Fiber architecture, and modern web development",
     images: [
       {
-        url: "/opengraph-image",
+        url: "https://reactjs-maxxing.vercel.app/Reactjs%20Maxxing.png",
         width: 1200,
         height: 630,
-        alt: "Inside React - Sanku's Blog",
+        alt: "reactjs maxxing - Sanku's Blog",
       },
     ],
   },
@@ -46,7 +46,7 @@ export const metadata: Metadata = {
     title: "Inside React | Sanku's Blog",
     description:
       "Deep dives into React internals, Fiber architecture, and modern web development",
-    images: ["/twitter-image"],
+    images: ["https://reactjs-maxxing.vercel.app/Reactjs%20Maxxing.png"],
     creator: "@user_sankalpa",
   },
 };

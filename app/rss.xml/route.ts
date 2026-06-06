@@ -1,6 +1,6 @@
 import { getAllPosts } from "@/lib/mdx-data";
 
-const BASE_URL = "https://inside-react.vercel.app";
+const BASE_URL = "https://reactjs-maxxing.vercel.app";
 
 function escapeXml(str: string): string {
     return str
@@ -34,15 +34,15 @@ export async function GET() {
     const rss = `<?xml version="1.0" encoding="UTF-8"?>
 <rss version="2.0" xmlns:atom="http://www.w3.org/2005/Atom">
   <channel>
-    <title>Inside React | Sanku's Blog</title>
+    <title>reactjs maxxing | Sanku's Blog</title>
     <link>${BASE_URL}</link>
     <description>Deep dives into React internals, Fiber architecture, and modern web development</description>
     <language>en-us</language>
     <atom:link href="${BASE_URL}/rss.xml" rel="self" type="application/rss+xml"/>
     <lastBuildDate>${new Date().toUTCString()}</lastBuildDate>
     <image>
-      <url>${BASE_URL}/og-image.png</url>
-      <title>Inside React | Sanku's Blog</title>
+      <url>${BASE_URL}/Reactjs%20Maxxing.png</url>
+      <title>reactjs maxxing | Sanku's Blog</title>
       <link>${BASE_URL}</link>
     </image>${items}
   </channel>
