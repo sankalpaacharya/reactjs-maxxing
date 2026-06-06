@@ -1,7 +1,7 @@
 ## reactjs maxxing
 
 <p align="center">
-  <img src="https://www.shutterstock.com/image-illustration/dramatic-clouds-pattern-on-hill-600nw-1625948488.jpg" alt="reactjs maxxing" />
+  <img src="public/Reactjs%20Maxxing.png" alt="reactjs maxxing" />
 </p>
 
 This is my attempt to understand React more deeply by exploring its internals and writing about them.
