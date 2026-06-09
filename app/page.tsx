@@ -22,11 +22,18 @@ export default function Home() {
       <section className="pt-6 pb-24 md:pt-12 md:pb-36">
         <p className="max-w-2xl text-base md:text-xl text-muted-foreground leading-relaxed md:leading-relaxed">
           Hey, I&apos;m{" "}
-          <span className="font-medium text-foreground">Sanku</span> — a developer
-          who got a little obsessed with how React actually works under the
-          hood. This is where I share deep dives into Fiber, reconciliation,
-          server components, and the machinery behind the framework you use
-          every day.
+          <span className="font-medium text-foreground">Sanku</span>. I love
+          React, the web, and security, so I write a lot about them here. Follow
+          me on{" "}
+          <a
+            href="https://x.com/sankalpa_02"
+            target="_blank"
+            rel="noopener noreferrer"
+            className="font-medium text-foreground underline-offset-4 hover:underline"
+          >
+            X
+          </a>{" "}
+          — I&apos;m more active there.
         </p>
 
         <div className="mt-4">
