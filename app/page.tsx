@@ -1,4 +1,3 @@
-import Link from "next/link";
 import { getAllPosts } from "@/lib/mdx-data";
 import { PostsGrid, ContentWrapper } from "@/components/home/posts-list";
 import { HeroSocials } from "@/components/home/hero-socials";
@@ -22,21 +21,16 @@ export default function Home() {
       {/* Hero */}
       <section className="pt-6 pb-24 md:pt-12 md:pb-36">
         <p className="max-w-2xl text-base md:text-xl text-muted-foreground leading-relaxed md:leading-relaxed">
-          Where I dig into how React actually works under the hood: Fiber,
-          reconciliation, and server components. Find me on <HeroSocials />{" "}
-          where I share deep dives every week.
+          Hey, I&apos;m{" "}
+          <span className="font-medium text-foreground">Sanku</span> — a developer
+          who got a little obsessed with how React actually works under the
+          hood. This is where I share deep dives into Fiber, reconciliation,
+          server components, and the machinery behind the framework you use
+          every day.
         </p>
 
-        <div className="mt-9 flex flex-wrap items-center gap-3">
-          {posts.length > 0 && (
-            <Link
-              href={`/blog/${posts[0].slug}`}
-              className="btn-raised px-5 py-2.5 rounded-lg bg-primary hover:bg-primary/90 text-primary-foreground font-medium text-sm transition-all duration-150 hover:-translate-y-px active:translate-y-0.5 flex items-center gap-2"
-            >
-              Read the latest
-              <span>→</span>
-            </Link>
-          )}
+        <div className="mt-4">
+          <HeroSocials />
         </div>
       </section>
 

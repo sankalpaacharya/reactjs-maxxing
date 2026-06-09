@@ -70,8 +70,8 @@
 
 .dark {
   /* Premium bluish reading experience - inspired by GAIA */
-  --background: oklch(0.145 0.008 265);
-  /* Deep dark with a cool blue undertone */
+  --background: oklch(0 0 0);
+  /* Pure black */
   --foreground: oklch(0.93 0.006 250);
   /* Cool off-white for crisp, premium reading */
   --card: oklch(0.18 0.008 265);

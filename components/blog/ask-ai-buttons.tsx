@@ -17,7 +17,7 @@ Help me understand the concepts explained in this article. Be ready to explain c
   const claudeUrl = `https://claude.ai/new?q=${encodedPrompt}`;
 
   return (
-    <div className="flex items-center justify-center gap-3 mt-8 pt-6 border-t border-muted-foreground/15">
+    <div className="flex items-center justify-center gap-3 mt-8">
       <a
         href={chatGPTUrl}
         target="_blank"

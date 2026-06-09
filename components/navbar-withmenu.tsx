@@ -254,9 +254,9 @@ export function NavbarWithMenu({
           className={cn(
             "navbar_content relative flex h-14 w-full items-center justify-between border transition-[border-radius,background-color,border-color] duration-300",
             activeDropdown
-              ? "rounded-t-lg border-border border-b-transparent bg-background backdrop-blur-md"
+              ? "rounded-t-full border-border border-b-transparent bg-background backdrop-blur-md"
               : scrolled
-                ? "rounded-lg border-border bg-card/40 backdrop-blur-md"
+                ? "rounded-full border-border bg-card/40 backdrop-blur-md"
                 : "rounded-none border-transparent bg-transparent",
           )}
           animate={{
@@ -298,7 +298,9 @@ export function NavbarWithMenu({
                     setActiveDropdown(null);
                   }}
                 >
-                  {item.icon ?? <span className="relative z-10">{item.label}</span>}
+                  {item.icon ?? (
+                    <span className="relative z-10">{item.label}</span>
+                  )}
                 </Link>
               ) : (
                 <button
@@ -312,8 +314,7 @@ export function NavbarWithMenu({
                   )}
                   <div className="relative z-10 flex items-center gap-2">
                     <span>
-                      {item.label.charAt(0).toUpperCase() +
-                        item.label.slice(1)}
+                      {item.label.charAt(0).toUpperCase() + item.label.slice(1)}
                     </span>
                     <HugeiconsIcon
                       icon={ArrowDown01Icon}

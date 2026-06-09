@@ -18,33 +18,28 @@ const socials = [
   },
 ];
 
-/**
- * Inline social mentions — brand icon tile + name woven into the hero copy,
- * the way Spectrum highlights iMessage / WhatsApp / Discord in its tagline.
- */
+/** Clean row of brand social icons shown under the hero copy. */
 export function HeroSocials() {
   return (
-    <>
-      {socials.map((social, i) => (
-        <span key={social.name} className="whitespace-nowrap">
-          <a
-            href={social.href}
-            target="_blank"
-            rel="noopener noreferrer"
-            className="group inline-flex items-center gap-1.5 align-middle font-semibold text-foreground transition-opacity duration-200 hover:opacity-80"
-          >
-            <Image
-              src={social.icon}
-              alt={social.name}
-              width={22}
-              height={22}
-              className="rounded-[5px] transition-transform duration-200 group-hover:-translate-y-px"
-            />
-            {social.name}
-          </a>
-          {i < socials.length - 1 ? <span>,&nbsp;</span> : null}
-        </span>
+    <div className="flex items-center gap-2 -ml-2">
+      {socials.map((social) => (
+        <a
+          key={social.name}
+          href={social.href}
+          target="_blank"
+          rel="noopener noreferrer"
+          aria-label={social.name}
+          className="rounded-lg p-2 transition-colors duration-200 hover:bg-muted/50"
+        >
+          <Image
+            src={social.icon}
+            alt={social.name}
+            width={28}
+            height={28}
+            className="h-7 w-7 rounded-md"
+          />
+        </a>
       ))}
-    </>
+    </div>
   );
 }
