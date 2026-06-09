@@ -122,7 +122,7 @@ export default async function BlogPost({
               <PostBanner slug={slug} topic={post.frontmatter.topic} />
 
               {/* Meta info - subtle and refined */}
-              <div className="flex items-center gap-3 mt-10 mb-6 text-xs text-muted-foreground/60 uppercase tracking-[0.15em]">
+              <div className="flex items-center justify-center gap-3 mt-10 mb-6 text-xs text-muted-foreground/60 uppercase tracking-[0.15em]">
                 <span>{post.frontmatter.topic}</span>
                 <span className="text-muted-foreground/30">·</span>
                 <span>
@@ -135,12 +135,12 @@ export default async function BlogPost({
               </div>
 
               {/* Title - clean, readable */}
-              <h1 className="text-3xl md:text-4xl font-semibold tracking-tight text-foreground mb-6 leading-[1.3] italic">
+              <h1 className="text-3xl md:text-4xl font-semibold tracking-tight text-foreground mb-6 leading-[1.3] italic text-center">
                 {post.frontmatter.title}
               </h1>
 
               {/* Description - subtle, refined */}
-              <p className="text-base text-foreground/60 leading-relaxed max-w-xl">
+              <p className="text-base text-foreground/60 leading-relaxed max-w-xl mx-auto text-center">
                 {post.frontmatter.description}
               </p>
 
@@ -148,7 +148,7 @@ export default async function BlogPost({
               <AskAIButtons slug={slug} title={post.frontmatter.title} />
 
               {/* Elegant separator */}
-              <div className="mt-12 w-16 h-px bg-muted-foreground/20" />
+              <div className="mt-12 w-16 h-px bg-muted-foreground/20 mx-auto" />
             </header>
           </div>
         )}

@@ -21,11 +21,7 @@ export default function Home() {
     <main className="max-w-4xl mx-auto px-6 py-16">
       {/* Hero */}
       <section className="pt-6 pb-24 md:pt-12 md:pb-36">
-        <h1 className="text-4xl md:text-6xl font-bold tracking-tight leading-[1.05] text-foreground text-balance">
-          Reactjs maxxing
-        </h1>
-
-        <p className="mt-7 max-w-2xl text-base md:text-xl text-muted-foreground leading-relaxed md:leading-relaxed">
+        <p className="max-w-2xl text-base md:text-xl text-muted-foreground leading-relaxed md:leading-relaxed">
           Where I dig into how React actually works under the hood: Fiber,
           reconciliation, and server components. Find me on <HeroSocials />{" "}
           where I share deep dives every week.

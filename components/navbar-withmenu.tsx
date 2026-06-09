@@ -42,7 +42,13 @@ export interface NavbarMenuProps {
 export interface NavbarWithMenuProps {
   sections: NavbarMenuSection[];
   navItems?: Array<
-    | { type: "link"; label: string; href: string }
+    | {
+        type: "link";
+        label: string;
+        href: string;
+        icon?: React.ReactNode;
+        external?: boolean;
+      }
     | { type: "dropdown"; label: string; menu: string }
   >;
   logo?: React.ReactNode;
@@ -151,7 +157,7 @@ export function NavbarMenu({ activeMenu, sections }: NavbarMenuProps) {
   return (
     <div
       className={cn(
-        "absolute top-full left-0 z-40 w-full origin-top overflow-hidden border border-y-0 border-border bg-background/95 backdrop-blur-2xl outline-none",
+        "absolute top-full left-0 z-40 w-full origin-top overflow-hidden rounded-b-2xl border border-t-0 border-border bg-background/95 backdrop-blur-2xl outline-none",
       )}
     >
       <div className="p-6">
@@ -223,7 +229,7 @@ export function NavbarWithMenu({
         duration: shouldReduceMotion ? 0.35 : 0.8,
         ease: [0.2, 0.9, 0.24, 1],
       }}
-      className="sticky top-0 z-50 w-full"
+      className="sticky top-3 z-50 w-full"
     >
       {/* biome-ignore lint/a11y/noStaticElementInteractions: Hover container for menu, not interactive content */}
       <motion.div
@@ -232,7 +238,7 @@ export function NavbarWithMenu({
         onMouseLeave={handleNavbarMouseLeave}
         animate={{
           maxWidth: scrolled ? "56rem" : "100vw",
-          marginTop: scrolled ? 12 : 0,
+          marginTop: scrolled ? 12 : 8,
           paddingLeft: scrolled ? 16 : 0,
           paddingRight: scrolled ? 16 : 0,
         }}
@@ -246,12 +252,12 @@ export function NavbarWithMenu({
         <motion.div
           initial={false}
           className={cn(
-            "navbar_content flex h-14 w-full items-center justify-between border transition-colors duration-300",
+            "navbar_content relative flex h-14 w-full items-center justify-between border transition-[border-radius,background-color,border-color] duration-300",
             activeDropdown
-              ? "border-border border-b-transparent bg-background backdrop-blur-md"
+              ? "rounded-t-lg border-border border-b-transparent bg-background backdrop-blur-md"
               : scrolled
-                ? "border-border bg-card/40 backdrop-blur-md"
-                : "border-transparent bg-transparent",
+                ? "rounded-lg border-border bg-card/40 backdrop-blur-md"
+                : "rounded-none border-transparent bg-transparent",
           )}
           animate={{
             paddingLeft: scrolled ? 12 : 32,
@@ -276,20 +282,23 @@ export function NavbarWithMenu({
             )}
           </div>
 
-          <div className="hidden items-center gap-2 px-1 py-1 md:flex">
-            <div className="flex items-center gap-1">
+          {/* Center nav — social icons */}
+          <div className="absolute left-1/2 hidden -translate-x-1/2 items-center gap-1 md:flex">
             {items.map((item) =>
               item.type === "link" ? (
                 <Link
                   key={item.href}
                   href={item.href}
-                  className="relative flex h-9 cursor-pointer items-center px-4 py-2 text-sm text-foreground transition-colors hover:bg-foreground/5"
+                  target={item.external ? "_blank" : undefined}
+                  rel={item.external ? "noopener noreferrer" : undefined}
+                  aria-label={item.label}
+                  className="relative flex h-9 cursor-pointer items-center gap-2 rounded-lg px-3 py-2 text-sm text-foreground transition-colors hover:bg-foreground/5"
                   onMouseEnter={() => {
                     setHoveredItem(item.label.toLowerCase());
                     setActiveDropdown(null);
                   }}
                 >
-                  <span className="relative z-10">{item.label}</span>
+                  {item.icon ?? <span className="relative z-10">{item.label}</span>}
                 </Link>
               ) : (
                 <button
@@ -303,7 +312,8 @@ export function NavbarWithMenu({
                   )}
                   <div className="relative z-10 flex items-center gap-2">
                     <span>
-                      {item.label.charAt(0).toUpperCase() + item.label.slice(1)}
+                      {item.label.charAt(0).toUpperCase() +
+                        item.label.slice(1)}
                     </span>
                     <HugeiconsIcon
                       icon={ArrowDown01Icon}
@@ -317,9 +327,10 @@ export function NavbarWithMenu({
                 </button>
               ),
             )}
-            </div>
-            {cta}
           </div>
+
+          {/* Right — CTA (desktop) */}
+          <div className="hidden md:block">{cta}</div>
 
           <Sheet>
             <SheetTrigger asChild className="md:hidden">

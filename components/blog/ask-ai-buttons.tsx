@@ -1,8 +1,5 @@
 "use client";
 
-import { HugeiconsIcon } from "@hugeicons/react";
-import { AiChat02Icon } from "@hugeicons/core-free-icons";
-
 interface AskAIButtonsProps {
   slug: string;
   title: string;
@@ -20,12 +17,12 @@ Help me understand the concepts explained in this article. Be ready to explain c
   const claudeUrl = `https://claude.ai/new?q=${encodedPrompt}`;
 
   return (
-    <div className="flex items-center gap-3 mt-8 pt-6 border-t border-muted-foreground/15">
+    <div className="flex items-center justify-center gap-3 mt-8 pt-6 border-t border-muted-foreground/15">
       <a
         href={chatGPTUrl}
         target="_blank"
         rel="noopener noreferrer"
-        className="inline-flex items-center gap-2 px-3 py-1.5 text-sm bg-muted/50 hover:bg-muted text-muted-foreground hover:text-foreground rounded-md transition-colors"
+        className="inline-flex min-w-28 items-center justify-center gap-2 px-3 py-1.5 text-sm bg-muted/50 hover:bg-muted text-muted-foreground hover:text-foreground rounded-md transition-colors"
       >
         <svg
           width="16"
@@ -42,14 +39,14 @@ Help me understand the concepts explained in this article. Be ready to explain c
         href={claudeUrl}
         target="_blank"
         rel="noopener noreferrer"
-        className="inline-flex items-center gap-2 px-3 py-1.5 text-sm bg-muted/50 hover:bg-muted text-muted-foreground hover:text-foreground rounded-md transition-colors"
+        className="inline-flex min-w-28 items-center justify-center gap-2 px-3 py-1.5 text-sm bg-muted/50 hover:bg-muted text-muted-foreground hover:text-foreground rounded-md transition-colors"
       >
         <img
           src="https://upload.wikimedia.org/wikipedia/commons/thumb/b/b0/Claude_AI_symbol.svg/960px-Claude_AI_symbol.svg.png"
           alt="Claude"
           width={16}
           height={16}
-          className="opacity-70"
+          className="h-4 w-4 shrink-0 object-contain opacity-70"
         />
         Claude
       </a>
@@ -57,14 +54,14 @@ Help me understand the concepts explained in this article. Be ready to explain c
         href="https://heygaia.io/c"
         target="_blank"
         rel="noopener noreferrer"
-        className="inline-flex items-center gap-2 px-3 py-1.5 text-sm bg-muted/50 hover:bg-muted text-muted-foreground hover:text-foreground rounded-md transition-colors"
+        className="inline-flex min-w-28 items-center justify-center gap-2 px-3 py-1.5 text-sm bg-muted/50 hover:bg-muted text-muted-foreground hover:text-foreground rounded-md transition-colors"
       >
         <img
           src="https://raw.githubusercontent.com/theexperiencecompany/gaia/10ddc7be52907bb2810114234418787aad257bd8/apps/web/public/brand/gaia_logo.svg"
           alt="Gaia"
           width={16}
           height={16}
-          className="opacity-70"
+          className="h-4 w-4 shrink-0 object-contain opacity-70"
         />
         Gaia
       </a>

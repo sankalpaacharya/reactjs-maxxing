@@ -2,51 +2,7 @@
 
 import Image from "next/image";
 import Link from "next/link";
-import { HugeiconsIcon } from "@hugeicons/react";
-import {
-  NewTwitterIcon,
-  LinkedinIcon,
-  GithubIcon,
-} from "@hugeicons/core-free-icons";
-import {
-  NavbarWithMenu,
-  type NavbarMenuSection,
-} from "@/components/navbar-withmenu";
-
-const sections: NavbarMenuSection[] = [
-  {
-    id: "socials",
-    gridLayout: "grid w-full grid-cols-1 gap-2",
-    links: [
-      {
-        label: "X (Twitter)",
-        href: "https://x.com/sankalpa_02",
-        external: true,
-        description: "Thoughts, threads & updates",
-        icon: <HugeiconsIcon icon={NewTwitterIcon} size={18} />,
-      },
-      {
-        label: "LinkedIn",
-        href: "https://linkedin.com/in/sankalpa02",
-        external: true,
-        description: "Professional profile",
-        icon: <HugeiconsIcon icon={LinkedinIcon} size={18} />,
-      },
-      {
-        label: "GitHub",
-        href: "https://github.com/sankalpaacharya",
-        external: true,
-        description: "Open source & projects",
-        icon: <HugeiconsIcon icon={GithubIcon} size={18} />,
-      },
-    ],
-  },
-];
-
-const navItems = [
-  { type: "link" as const, label: "Home", href: "/" },
-  { type: "dropdown" as const, label: "Socials", menu: "socials" },
-];
+import { NavbarWithMenu } from "@/components/navbar-withmenu";
 
 const logo = (
   <Link href="/" className="flex items-center gap-2.5">
@@ -72,11 +28,6 @@ const cta = (
 
 export function SiteNavbar() {
   return (
-    <NavbarWithMenu
-      sections={sections}
-      navItems={navItems}
-      logo={logo}
-      cta={cta}
-    />
+    <NavbarWithMenu sections={[]} navItems={[]} logo={logo} cta={cta} />
   );
 }

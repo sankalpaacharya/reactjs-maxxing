@@ -28,6 +28,12 @@ const nextConfig = {
     ],
   },
   async headers() {
+    // Never send long-lived/immutable cache headers in development —
+    // the browser would hold onto stale dev chunks across HMR rebuilds,
+    // which breaks hot reload and forces manual cache clears.
+    if (process.env.NODE_ENV !== "production") {
+      return [];
+    }
     return [
       {
         // Cache all static assets in public folder for 1 year

@@ -2,7 +2,7 @@ import type React from "react";
 import type { Metadata } from "next";
 import { Geist, Geist_Mono, Poppins } from "next/font/google";
 import { Analytics } from "@vercel/analytics/next";
-import { Header } from "@/components/header";
+import { SiteNavbar } from "@/components/site-navbar";
 import "./globals.css";
 
 const _geist = Geist({ subsets: ["latin"] });
@@ -59,7 +59,7 @@ export default function RootLayout({
   return (
     <html lang="en" className={`dark ${poppins.variable}`}>
       <body className="font-sans antialiased min-h-screen">
-        <Header />
+        <SiteNavbar />
         {children}
         <Analytics />
       </body>
