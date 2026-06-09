@@ -10,9 +10,10 @@ import { ArrowLeft01Icon } from "@hugeicons/core-free-icons";
 import { TableOfContents } from "@/components/blog/table-of-contents";
 import { AskAIButtons } from "@/components/blog/ask-ai-buttons";
 import { SneakEmojiDialog } from "@/components/blog/sneak-emoji-dialog";
+import { PostBanner } from "@/components/blog/post-banner";
 import { Footer } from "@/components/footer";
 
-export const dynamic = "force-dynamic";
+export const dynamic = "force-static";
 
 export function generateStaticParams() {
   const slugs = getAllPostSlugs();
@@ -117,8 +118,11 @@ export default async function BlogPost({
                 <span>Back</span>
               </a>
 
+              {/* Banner — blue gradient cover + per-post motion graphic */}
+              <PostBanner slug={slug} topic={post.frontmatter.topic} />
+
               {/* Meta info - subtle and refined */}
-              <div className="flex items-center gap-3 mb-6 text-xs text-muted-foreground/60 uppercase tracking-[0.15em]">
+              <div className="flex items-center gap-3 mt-10 mb-6 text-xs text-muted-foreground/60 uppercase tracking-[0.15em]">
                 <span>{post.frontmatter.topic}</span>
                 <span className="text-muted-foreground/30">·</span>
                 <span>

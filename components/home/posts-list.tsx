@@ -1,4 +1,5 @@
 import Link from "next/link";
+import { CardArt } from "@/components/blog/post-art";
 
 export interface PostMeta {
   slug: string;
@@ -63,6 +64,58 @@ export function PostsList({ posts }: { posts: PostMeta[] }) {
           </Link>
         </div>
       ))}
+    </div>
+  );
+}
+
+export function PostsGrid({ posts }: { posts: PostMeta[] }) {
+  return (
+    <div>
+      <div className="flex items-end justify-between mb-8 border-b border-border/60 pb-2">
+        <h1 className="text-2xl font-serif italic text-foreground/90">
+          Contents
+        </h1>
+        <span className="font-mono text-[10px] text-muted-foreground mb-1">
+          VOL. {posts.length.toString().padStart(2, "0")}
+        </span>
+      </div>
+
+      <div className="grid grid-cols-1 sm:grid-cols-2 gap-5">
+        {posts.map((post) => (
+          <Link
+            key={post.slug}
+            href={`/blog/${post.slug}`}
+            className="group flex flex-col rounded-2xl bg-[#1a181c] p-3 transition-colors duration-200 hover:bg-[#211e25]"
+          >
+            {/* Framed cover: blue gradient background + animated motion graphic */}
+            <div
+              className="relative aspect-[16/10] overflow-hidden rounded-xl bg-cover bg-center"
+              style={{ backgroundImage: "url('/bluebackground.jpg')" }}
+            >
+              <CardArt slug={post.slug} />
+              {/* Topic badge */}
+              <span className="absolute top-3 right-3 rounded-full bg-primary px-3 py-1 font-mono text-[10px] uppercase tracking-wider text-white ring-1 ring-inset ring-white/20 shadow-sm">
+                {post.topic}
+              </span>
+            </div>
+
+            {/* Meta + title below the image */}
+            <div className="px-1 pt-4 pb-2">
+              <div className="font-mono text-xs text-muted-foreground">
+                <span className="text-foreground/70">{post.topic}</span>
+                <span className="mx-1.5">·</span>
+                {post.date}
+              </div>
+              <h2
+                className="mt-2 text-lg font-semibold text-foreground leading-snug line-clamp-2 text-balance"
+                title={post.title}
+              >
+                {post.title}
+              </h2>
+            </div>
+          </Link>
+        ))}
+      </div>
     </div>
   );
 }

@@ -20,7 +20,7 @@
   --card-foreground: oklch(0.1450 0 0);
   --popover: oklch(1 0 0);
   --popover-foreground: oklch(0.1450 0 0);
-  --primary: oklch(0.2050 0 0);
+  --primary: oklch(0.55 0.16 250);
   --primary-foreground: oklch(0.9850 0 0);
   --secondary: oklch(0.9700 0 0);
   --secondary-foreground: oklch(0.2050 0 0);
@@ -32,7 +32,7 @@
   --destructive-foreground: oklch(1 0 0);
   --border: oklch(0.9220 0 0);
   --input: oklch(0.9220 0 0);
-  --ring: oklch(0.7080 0 0);
+  --ring: oklch(0.55 0.16 250);
   --chart-1: oklch(0.8100 0.1000 252);
   --chart-2: oklch(0.6200 0.1900 260);
   --chart-3: oklch(0.5500 0.2200 263);
@@ -69,43 +69,43 @@
 }
 
 .dark {
-  /* Premium reading experience - inspired by overreacted.io */
-  --background: oklch(0.145 0.006 285);
-  /* Deeper dark with subtle purple undertone */
-  --foreground: oklch(0.92 0.015 75);
-  /* Warm cream white for comfortable reading */
-  --card: oklch(0.18 0.006 285);
-  --card-foreground: oklch(0.92 0.015 75);
-  --popover: oklch(0.20 0.006 285);
-  --popover-foreground: oklch(0.92 0.015 75);
-  --primary: oklch(0.72 0.14 30);
-  /* Softer warm coral - refined orange */
-  --primary-foreground: oklch(0.15 0 0);
-  --secondary: oklch(0.22 0.006 285);
-  --secondary-foreground: oklch(0.92 0.015 75);
-  --muted: oklch(0.22 0.006 285);
-  --muted-foreground: oklch(0.62 0.02 60);
-  /* Warmer muted for better readability */
-  --accent: oklch(0.30 0.008 285);
-  --accent-foreground: oklch(0.92 0.015 75);
+  /* Premium bluish reading experience - inspired by GAIA */
+  --background: oklch(0.145 0.008 265);
+  /* Deep dark with a cool blue undertone */
+  --foreground: oklch(0.93 0.006 250);
+  /* Cool off-white for crisp, premium reading */
+  --card: oklch(0.18 0.008 265);
+  --card-foreground: oklch(0.93 0.006 250);
+  --popover: oklch(0.20 0.008 265);
+  --popover-foreground: oklch(0.93 0.006 250);
+  --primary: oklch(0.68 0.15 250);
+  /* Bright premium azure accent */
+  --primary-foreground: oklch(0.15 0.02 265);
+  --secondary: oklch(0.22 0.008 265);
+  --secondary-foreground: oklch(0.93 0.006 250);
+  --muted: oklch(0.22 0.008 265);
+  --muted-foreground: oklch(0.64 0.02 250);
+  /* Cool muted for comfortable secondary text */
+  --accent: oklch(0.30 0.02 255);
+  --accent-foreground: oklch(0.93 0.006 250);
   --destructive: oklch(0.7040 0.1910 22.2160);
   --destructive-foreground: oklch(0.9850 0 0);
-  --border: oklch(0.2750 0 0);
-  --input: oklch(0.3250 0 0);
-  --ring: oklch(0.5560 0 0);
+  --border: oklch(0.275 0.008 265);
+  --input: oklch(0.325 0.01 265);
+  --ring: oklch(0.68 0.15 250);
   --chart-1: oklch(0.8100 0.1000 252);
   --chart-2: oklch(0.6200 0.1900 260);
   --chart-3: oklch(0.5500 0.2200 263);
   --chart-4: oklch(0.4900 0.2200 264);
   --chart-5: oklch(0.4200 0.1800 266);
-  --sidebar: oklch(0.2050 0 0);
-  --sidebar-foreground: oklch(0.9850 0 0);
-  --sidebar-primary: oklch(0.4880 0.2430 264.3760);
-  --sidebar-primary-foreground: oklch(0.9850 0 0);
-  --sidebar-accent: oklch(0.2690 0 0);
-  --sidebar-accent-foreground: oklch(0.9850 0 0);
-  --sidebar-border: oklch(0.2750 0 0);
-  --sidebar-ring: oklch(0.4390 0 0);
+  --sidebar: oklch(0.18 0.008 265);
+  --sidebar-foreground: oklch(0.93 0.006 250);
+  --sidebar-primary: oklch(0.68 0.15 250);
+  --sidebar-primary-foreground: oklch(0.15 0.02 265);
+  --sidebar-accent: oklch(0.30 0.02 255);
+  --sidebar-accent-foreground: oklch(0.93 0.006 250);
+  --sidebar-border: oklch(0.275 0.008 265);
+  --sidebar-ring: oklch(0.68 0.15 250);
   --font-sans: ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, 'Noto Sans', sans-serif, 'Apple Color Emoji', 'Segoe UI Emoji', 'Segoe UI Symbol', 'Noto Color Emoji';
   --font-serif: ui-serif, Georgia, Cambria, "Times New Roman", Times, serif;
   --font-mono: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", "Courier New", monospace;
@@ -256,8 +256,8 @@ img {
 
 .sneak-emoji-card {
   animation: sneak-left 1.2s cubic-bezier(0.16, 1, 0.3, 1) 0.2s both;
-  background: oklch(0.2 0.01 285 / 0.92);
-  border: 1px solid oklch(0.3 0.01 285 / 0.5);
+  background: oklch(0.2 0.012 265 / 0.92);
+  border: 1px solid oklch(0.3 0.02 255 / 0.5);
   border-radius: 16px;
   box-shadow: var(--shadow-lg);
   padding: 14px 16px;
@@ -266,6 +266,41 @@ img {
 
 .sneak-emoji-card--reduced {
   animation: none;
+}
+
+/* Raised "3D" button shadow (used by the Hire me CTA) */
+.btn-raised {
+  box-shadow:
+    inset 0 1px 0 oklch(1 0 0 / 0.25),
+    0 3px 0 oklch(0.45 0.13 250),
+    0 5px 12px -2px oklch(0 0 0 / 0.5);
+}
+
+/* Blog card cover motion graphics */
+@keyframes art-dash {
+  to { stroke-dashoffset: -14; }
+}
+@keyframes art-bob {
+  0%, 100% { transform: translateY(0); }
+  50% { transform: translateY(-5px); }
+}
+@keyframes art-slide {
+  0%, 100% { transform: translateX(0); }
+  50% { transform: translateX(44px); }
+}
+@keyframes art-fill {
+  0%, 100% { transform: scaleY(0.6); }
+  50% { transform: scaleY(1); }
+}
+@keyframes art-draw {
+  0% { transform: scaleX(0); }
+  55%, 100% { transform: scaleX(1); }
+}
+@keyframes art-drop {
+  0% { transform: translateY(-130%); opacity: 0; }
+  15% { opacity: 1; }
+  85% { opacity: 1; }
+  100% { transform: translateY(150%); opacity: 0; }
 }
 
 /* Josh Comeau-inspired arrow bullet points */
